@@ -1,0 +1,67 @@
+/* css/genome-scout.css */
+
+/* Grid para organizar los 3 inputs de archivo */
+.input-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 2rem;
+}
+
+/* Hace que el input del genoma de referencia ocupe todo el ancho */
+.input-grid .reference-input {
+    grid-column: 1 / -1;
+}
+
+/* Grid para organizar las opciones */
+.parameter-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: end;
+}
+
+.parameter-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 200;
+    color: var(--color-text-secondary);
+}
+
+.text-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-small);
+    background-color: var(--color-background);
+    color: var(--color-text-primary);
+    box-sizing: border-box;
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
+
+.options-title {
+    margin-top: 2rem;
+    border-top: 1px solid var(--color-border);
+    padding-top: 1.5rem;
+}
+
+.separator {
+    border: none;
+    height: 1px;
+    background-color: var(--color-border);
+    margin: 1.5rem 0;
+}
+
+/* Estilos para los botones de descarga en los resultados */
+.download-buttons {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--color-border);
+}

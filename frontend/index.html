@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bioco | Boris Josef Cintao Macias</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=VT323&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- SVG Filter para el efecto "Gooey" (no será visible) -->
+    <svg style="position: absolute; width: 0; height: 0;">
+        <defs>
+            <filter id="goo">
+                <!-- Aumentamos el desenfoque para un efecto más suave -->
+                <feGaussianBlur in="SourceGraphic" stdDeviation="20" result="blur" />
+                <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7" result="goo" />
+                <feBlend in="SourceGraphic" in2="goo" />
+            </filter>
+        </defs>
+    </svg>
+
+    <!-- INTERRUPTOR DE TEMA -->
+    <div id="theme-toggle">
+        <svg id="light-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="icon">
+            <path d="M16 5V4H8v1H6v15h12V5h-2zm-3 13H9v-2h4v2zm3-4H8v-2h8v2zm0-4H8V7h8v3z"/>
+        </svg>
+        <svg id="dark-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="icon hidden">
+            <path d="M12 2C6.48 2 2 6.48 2 12v9h2v-2h16v2h2v-9c0-5.52-4.48-10-10-10zm0 2c2.76 0 5 2.24 5 5v1h-1.45c-.6-.83-1.52-1.45-2.55-1.72V4zm-5 5c0-2.76 2.24-5 5-5v4.28c-1.03.27-1.95.89-2.55 1.72H7V9z"/>
+        </svg>
+    </div>
+
+    <!-- SECCIÓN 1: HERO CON EFECTO METABALLS -->
+    <section id="hero">
+        <div class="metaball-background">
+            <div id="cursor-ball" class="metaball"></div>
+            <div class="metaball"></div>
+            <div class="metaball"></div>
+            <div class="metaball"></div>
+            <div class="metaball"></div>
+            <div class="metaball"></div>
+        </div>
+
+        <div class="hero-content">
+            <h1>Tu Nombre</h1>
+            <p class="tagline">Bioinformatics Tools & Portfolio</p>
+        </div>
+    </section>
+
+    <!-- SECCIÓN 2: HERRAMIENTAS -->
+    <section id="tools">
+        <div class="container">
+            <h2>Herramientas Interactivas</h2>
+            <div class="tools-grid">
+                <article class="tool-card"><div><h3>Proteome Cleaner</h3><p>Limpia proteomas eliminando duplicados y secuencias no canónicas.</p></div></article>
+                <article class="tool-card"><div><h3>Format Converter</h3><p>Convierte entre formatos comunes como FASTA, FASTQ, GFF y BED.</p></div></article>
+                <article class="tool-card"><div><h3>Subsequence Extractor</h3><p>Extrae regiones genómicas específicas usando coordenadas.</p></div></article>
+                <article class="tool-card"><div><h3>Sequence Analyzer</h3><p>Calcula estadísticas básicas de secuencias (longitud, %GC, etc.).</p></div></article>
+                <article class="tool-card"><div><h3>Sequence Filter</h3><p>Filtra secuencias por longitud o contenido de 'N's.</p></div></article>
+                <article class="tool-card"><div><h3>Codon Usage Calculator</h3><p>Calcula la frecuencia de codones y genera tablas o heatmaps.</p></div></article>
+                <article class="tool-card"><div><h3>Mini Alignment Tool</h3><p>Alinea dos secuencias cortas usando Needleman-Wunsch.</p></div></article>
+                <article class="tool-card"><div><h3>Translator</h3><p>Traduce secuencias de nucleótidos a proteínas.</p></div></article>
+            </div>
+        </div>
+    </section>
+    
+    <script src="js/script.js"></script>
+</body>
+</html>

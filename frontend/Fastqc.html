@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QC Inspector</title>
+    <link rel="stylesheet" href="css/fastqc.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Zalando+Sans+Expanded:wght@200;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div id="app-layout">
+        <!-- Barra de Navegación Lateral -->
+        <aside id="app-sidebar">
+            <div class="sidebar-header"><h3>Tools</h3></div>
+            <nav class="sidebar-nav">
+                <a href="Fastqc.html" class="nav-link active">Quality Inspector</a>
+                <a href="cleaner.html" class="nav-link">Sequence Cleaner</a>
+                <a href="genome_scout.html" class="nav-link">Genome Scout</a>
+                <a href="#" class="nav-link">Workflow Builder</a>
+            </nav>
+        </aside>
+
+        <div id="main-content-wrapper">
+            <!-- Header -->
+            <header id="app-header">
+                <button id="sidebar-toggle-btn" class="icon-button is-active" aria-label="Toggle sidebar">
+                    <span class="hamburger-box"><span class="hamburger-inner"></span></span>
+                </button>
+                <div class="header-controls">
+                    <div class="theme-switch-wrapper">
+                        <label class="theme-switch" for="theme-checkbox">
+                            <input type="checkbox" id="theme-checkbox" />
+                            <div class="slider round">
+                                <span class="icon-sun">☀️</span><span class="icon-moon">🌙</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </header>
+
+            <main id="app-content">
+                <section class="title-section">
+                    <h1>QC Inspector Tool</h1>
+                    <p class="description">An interactive tool to assess the quality of your FASTQ sequencing data. Upload your files or paste raw text to generate key metrics and visualizations.</p>
+                </section>
+
+                <!-- Formulario de Análisis -->
+                <section id="qc-inspector" class="tool-section">
+                    <form id="fqc-form">
+                        <h2>Start Analysis</h2>
+                        <div class="input-mode-selector">
+                            <button type="button" id="mode-upload" class="tab-button active">Upload File(s)</button>
+                            <button type="button" id="mode-paste" class="tab-button">Paste Text</button>
+                        </div>
+
+                        <!-- Contenedor para Subir Archivos -->
+                        <div id="upload-container">
+                            <div class="file-input-wrapper">
+                                <label for="fastq-file-1" class="custom-file-upload">File 1</label>
+                                <input type="file" id="fastq-file-1" name="file1" class="fastq-file-input" accept=".fastq,.fq,.fastq.gz,.fq.gz">
+                                <span class="file-name-display" id="file-name-1">No file selected</span>
+                            </div>
+                            <div id="file-2-wrapper" class="file-input-wrapper hidden">
+                                <label for="fastq-file-2" class="custom-file-upload">File 2</label>
+                                <input type="file" id="fastq-file-2" name="file2" class="fastq-file-input" accept=".fastq,.fq,.fastq.gz,.fq.gz">
+                                <span class="file-name-display" id="file-name-2">No file selected</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Contenedor para Pegar Texto (Restaurado) -->
+                        <div id="paste-container" class="hidden">
+                            <div id="paste-grid-container">
+                                <div class="textarea-wrapper">
+                                    <label for="fastq-text-input-1">Sequence 1:</label>
+                                    <textarea id="fastq-text-input-1" placeholder="@read1..." maxlength="5000"></textarea>
+                                    <span id="char-counter-1" class="char-counter">0 / 5000</span>
+                                </div>
+                                <div id="paste-2-wrapper" class="textarea-wrapper hidden">
+                                    <label for="fastq-text-input-2">Sequence 2:</label>
+                                    <textarea id="fastq-text-input-2" placeholder="Second FASTQ sequence..." maxlength="5000"></textarea>
+                                    <span id="char-counter-2" class="char-counter">0 / 5000</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="controls-wrapper">
+                            <div class="comparison-toggle-wrapper">
+                                <input type="checkbox" id="comparison-toggle">
+                                <label for="comparison-toggle">Compare two inputs</label>
+                            </div>
+                            <div class="submit-wrapper">
+                                <!-- Botón "Analyze" con su estructura original restaurada -->
+                                <button type="submit" class="button" id="analyze-button-label">
+                                    <div class="button_inner">
+                                        <img src="https://i.ibb.co/7Jd2p0N/right-arrow-white.png" alt="arrow" class="button_arrow"/>
+                                        <span class="t">Analyze</span>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- Sección de Estado (Presente y lista) -->
+                <div id="status-container" class="hidden tool-section">
+                    <h3>Analysis Status:</h3>
+                    <p id="status-message">Waiting for job...</p>
+                    <div class="loader-wrapper"><div id="loader" class="hidden"><div id="box"></div><div id="hill"></div></div></div>
+                </div>
+
+                <!-- Sección de Resultados (Presente y lista) -->
+                <section id="results-section" class="tool-section hidden">
+                    <h3>Results</h3>
+                    <div id="summary-results-wrapper"></div>
+                    <div class="chart-container"><canvas id="quality-chart"></canvas></div>
+                </section>
+            </main>
+        </div>
+    </div>
+    
+    <script src="js/fastqc.js"></script>
+</body>
+</html>

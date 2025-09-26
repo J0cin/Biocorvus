@@ -1,0 +1,161 @@
+/* --- Variables y Reseteo Básico --- */
+:root {
+    /* Paleta de colores para la sección de herramientas (Dark Mode) */
+    --tools-text-color: #e0e1dd;
+    --card-bg-color: rgba(27, 38, 59, 0.5); /* Semitransparente */
+    --border-color: #415a77;
+    --accent-color: #ff8c42;
+
+    /* Paletas de colores para el fondo global */
+    --grad-dark-1: #003973;
+    --grad-dark-2: #E56717;
+    --grad-light-1: #FFDAB9;
+    --grad-light-2: #98FB98;
+    
+    /* Tipografía */
+    --font-sans: 'Inter', sans-serif;
+    --font-retro: 'VT323', monospace;
+}
+
+/* Paleta de colores para la sección de herramientas (Light Mode) */
+body.light-mode {
+    --tools-text-color: #1b263b;
+    --card-bg-color: rgba(255, 255, 255, 0.5); /* Semitransparente */
+    --border-color: #b8c2d1;
+    --accent-color: #ff6b6b;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+.hidden { display: none; }
+html { scroll-behavior: smooth; }
+
+/* 1. FONDO UNIFICADO PARA TODA LA PÁGINA */
+body {
+    transition: background-image 0.5s ease;
+    /* Fondo por defecto (Dark Mode) */
+    background-image: linear-gradient(-206deg, var(--grad-dark-1) 0%, var(--grad-dark-2) 100%);
+    background-attachment: fixed; /* Evita que el degradado se mueva al hacer scroll */
+}
+/* Fondo en Light Mode */
+body.light-mode {
+    background-image: linear-gradient(-206deg, var(--grad-light-1) 0%, var(--grad-light-2) 100%);
+}
+
+/* --- INTERRUPTOR DE TEMA --- */
+#theme-toggle {
+    position: fixed; top: 20px; right: 20px; z-index: 1000;
+    backdrop-filter: blur(5px);
+    border-radius: 50%; width: 50px; height: 50px; display: flex;
+    justify-content: center; align-items: center; cursor: pointer;
+    transition: background-color 0.3s, border-color 0.3s;
+
+    /* Estilos por defecto (Dark Mode) */
+    background-color: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.icon { color: white; transition: color 0.3s; }
+
+/* Estilos del botón en Light Mode */
+body.light-mode #theme-toggle {
+    background-color: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+body.light-mode .icon { color: #333; }
+
+/* --- SECCIÓN HERO --- */
+#hero {
+    height: 100vh;
+    position: relative;
+    overflow: hidden;
+    cursor: none;
+    
+}
+
+.metaball-background {
+    position: absolute; width: 100%; height: 100%;
+    filter: url(#goo);
+}
+
+/* 2. METABALLS SUAVES Y DE COLOR */
+.metaball {
+    position: absolute;
+    border-radius: 50%;
+    /* De blanco sólido a blanco semitransparente para que absorba el color del fondo */
+    background: rgba(255, 255, 255, 0.6);
+    animation: move 20s infinite ease-in-out alternate;
+}
+
+#cursor-ball {
+    width: 80px; height: 80px;
+    animation: none;
+    transition: transform 0.1s linear;
+}
+
+
+/* Fondo en Light Mode */
+body.light-mode #hero {
+    background-image: linear-gradient(-206deg, var(--grad-light-1) 0%, var(--grad-light-2) 100%);
+}
+
+
+
+.metaball:not(#cursor-ball):nth-of-type(2) { width: 150px; height: 150px; top: 20%; left: 10%; animation-duration: 18s; }
+.metaball:not(#cursor-ball):nth-of-type(3) { width: 200px; height: 200px; top: 60%; left: 20%; animation-duration: 22s; }
+.metaball:not(#cursor-ball):nth-of-type(4) { width: 100px; height: 100px; top: 40%; left: 80%; animation-duration: 25s; }
+.metaball:not(#cursor-ball):nth-of-type(5) { width: 180px; height: 180px; top: 70%; left: 70%; animation-duration: 19s; }
+.metaball:not(#cursor-ball):nth-of-type(6) { width: 120px; height: 120px; top: 10%; left: 50%; animation-duration: 21s; }
+
+@keyframes move {
+    0% { transform: translate(0, 0); }
+    25% { transform: translate(100px, -50px) scale(1.1); }
+    50% { transform: translate(-80px, 120px) scale(0.9); }
+    75% { transform: translate(50px, -100px) scale(1.2); }
+    100% { transform: translate(0, 0); }
+}
+
+..hero-content {
+    position: relative; z-index: 10; height: 100%;
+    display: flex; flex-direction: column; justify-content: center;
+    align-items: center; text-align: center;
+    color: #ffffff; /* Texto siempre blanco para mejor contraste */
+    font-family: var(--font-sans);
+    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+#hero h1 { font-size: 4.5rem; font-weight: 700; }
+#hero .tagline { font-size: 1.5rem; }
+
+/* --- SECCIÓN TOOLS --- */
+#tools {
+    /* Se elimina el background-color de aquí */
+    color: var(--tools-text-color);
+    font-family: var(--font-retro);
+    padding: 6rem 2rem;
+    position: relative;
+    z-index: 5;
+    transition: color 0.5s ease;
+    
+    /* 3. SEPARADOR SUTIL */
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+body.light-mode #tools {
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+#tools h2 { text-align: center; font-size: 3rem; margin-bottom: 3rem; color: var(--accent-color); }
+.tools-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem; max-width: 900px; margin: 0 auto;
+}
+.tool-card {
+    /* El fondo ahora es semitransparente para dejar ver el degradado */
+    background-color: var(--card-bg-color);
+    backdrop-filter: blur(10px); /* Efecto "cristal esmerilado" */
+    border: 1px solid var(--border-color);
+    padding: 1.5rem;
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+    border-radius: 10px;
+}
+.tool-card:hover { border-color: var(--accent-color); transform: translateY(-5px); }
+.tool-card h3 { font-size: 1.8rem; color: var(--tools-text-color); margin-bottom: 0.5rem; }
+.tool-card p { font-size: 1.2rem; color: var(--tools-text-color); line-height: 1.4; }

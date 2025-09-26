@@ -1,0 +1,12 @@
+# Entornos de Python y cachés
+__pycache__/
+*.pyc
+venv/
+
+# Archivos generados por la aplicación
+backend/uploads/
+backend/results/
+
+# Archivos de sistema operativo
+.DS_Store
+Thumbs.db
