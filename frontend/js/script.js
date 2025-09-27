@@ -1,45 +1,43 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', function() {
 
-    // --- LÓGICA DEL CURSOR METABALL ---
-    const cursorBall = document.getElementById('cursor-ball');
+    // --- LÓGICA PARA EL MENÚ HAMBURGUESA ---
+    const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
+    const appLayout = document.getElementById('app-layout');
+    const sidebarToggleInput = document.getElementById('sidebar-toggle-input');
+
+    // Estado inicial del menú (abierto)
+    let isSidebarActive = true;
+    sidebarToggleBtn.classList.add('is-active');
     
-    if (window.matchMedia("(pointer: fine)").matches) {
-        document.body.addEventListener('mousemove', (e) => {
-            window.requestAnimationFrame(() => {
-                const x = e.clientX - cursorBall.offsetWidth / 2;
-                const y = e.clientY - cursorBall.offsetHeight / 2;
-                cursorBall.style.transform = `translate(${x}px, ${y}px)`;
-            });
-        });
-    } else {
-        cursorBall.style.display = 'none';
-    }
-
-    // --- LÓGICA DEL INTERRUPTOR DE TEMA (LIGHT/DARK MODE) ---
-    const themeToggle = document.getElementById('theme-toggle');
-    const lightIcon = document.getElementById('light-icon');
-    const darkIcon = document.getElementById('dark-icon');
-    const body = document.body;
-
-    const applyTheme = (theme) => {
-        if (theme === 'light') {
-            body.classList.add('light-mode');
-            lightIcon.classList.add('hidden');
-            darkIcon.classList.remove('hidden');
+    sidebarToggleBtn.addEventListener('click', () => {
+        isSidebarActive = !isSidebarActive;
+        if (isSidebarActive) {
+            sidebarToggleBtn.classList.add('is-active');
+            appLayout.classList.remove('sidebar-collapsed');
+            sidebarToggleInput.checked = true;
         } else {
-            body.classList.remove('light-mode');
-            lightIcon.classList.remove('hidden');
-            darkIcon.classList.add('hidden');
+            sidebarToggleBtn.classList.remove('is-active');
+            appLayout.classList.add('sidebar-collapsed');
+            sidebarToggleInput.checked = false;
         }
-    };
+    });
 
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    applyTheme(savedTheme);
 
-    themeToggle.addEventListener('click', () => {
-        const newTheme = body.classList.contains('light-mode') ? 'dark' : 'light';
-        localStorage.setItem('theme', newTheme);
-        applyTheme(newTheme);
+    // --- LÓGICA PARA REVELAR EL CUERVO CON SCROLL ---
+    const appContent = document.getElementById('app-content');
+    const crowSilhouette = document.querySelector('.crow-silhouette');
+
+    // Umbral de scroll para mostrar el cuervo (ej. 20% de la altura de la ventana)
+    const scrollThreshold = window.innerHeight * 0.2;
+
+    appContent.addEventListener('scroll', () => {
+        // Si el scroll supera el umbral, muestra el cuervo
+        if (appContent.scrollTop > scrollThreshold) {
+            crowSilhouette.classList.add('visible');
+        } else {
+            // Si vuelve a subir, lo oculta
+            crowSilhouette.classList.remove('visible');
+        }
     });
 
 });
