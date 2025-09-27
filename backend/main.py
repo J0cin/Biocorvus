@@ -24,7 +24,7 @@ app = FastAPI()
 # Lista de orígenes que tienen permiso para hablar con tu API
 origins = [
     # La URL que Render te dará para tu frontend (pon la real cuando la tengas)
-    "https://tu-frontend.onrender.com", 
+    "https://biocorvus.onrender.com", 
     
     # Para tus pruebas locales desde http://127.0.0.1 o http://localhost
     "http://localhost",
