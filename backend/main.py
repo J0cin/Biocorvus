@@ -20,13 +20,34 @@ Path("results").mkdir(exist_ok=True)
 
 app = FastAPI()
 
+
+# Lista de orígenes que tienen permiso para hablar con tu API
+origins = [
+    # La URL que Render te dará para tu frontend (pon la real cuando la tengas)
+    "https://tu-frontend.onrender.com", 
+    
+    # Para tus pruebas locales desde http://127.0.0.1 o http://localhost
+    "http://localhost",
+    "http://127.0.0.1",
+    "http://localhost:8000", # A veces se necesita el puerto
+    "http://127.0.0.1:8000",
+
+    # CRÍTICO: Para permitir abrir los archivos .html directamente desde tu disco
+    "null", 
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    # Cambiamos allow_origins a True para permitir cualquier origen por ahora,
+    # o puedes usar la lista `origins` para ser más específico.
+    # Para depurar, empecemos con la opción más abierta:
+    allow_origins=["*"], 
+    
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["*"], # Permite todos los métodos (GET, POST, etc.)
+    allow_headers=["*"], # Permite todas las cabeceras
 )
+
 
 # --- Funciones de Ayuda (ligeramente modificada) ---
 
