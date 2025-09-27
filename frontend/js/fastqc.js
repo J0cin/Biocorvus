@@ -3,7 +3,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     console.log('[fastqc.js] DOMContentLoaded - initializing QC Inspector UI');
     // --- 1. SELECTORES ---
-    const API_BASE_URL = 'http://127.0.0.1:8000';
+    const API_BASE_URL = 'http://158.42.124.228:8000';;
 
     // UI Principal
     const appLayout = document.getElementById('app-layout');

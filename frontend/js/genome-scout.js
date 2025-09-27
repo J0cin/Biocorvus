@@ -2,7 +2,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- SELECTORES ---
-    const API_BASE_URL = 'http://127.0.0.1:8000';
+    const API_BASE_URL = 'http://158.42.124.228:8000';
     const appLayout = document.getElementById('app-layout');
     const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
     const themeCheckbox = document.getElementById('theme-checkbox');
