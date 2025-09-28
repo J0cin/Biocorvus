@@ -1,161 +1,245 @@
 /* --- VARIABLES Y ESTILOS GLOBALES --- */
 :root {
     --font-family: "Zalando Sans Expanded", sans-serif;
-    --transition-speed: 0.3s;
-    --border-radius-main: 16px;
-    --border-radius-small: 8px;
-    --bar-width: 24px;
-    --bar-height: 3px;
-    --hamburger-gap: 5px;
-    --animation-timing: 200ms ease-in-out;
-    --color-background-start: #000000;
+    --color-background-start: #020211;
     --color-background-end: #19183B;
     --color-text-primary: #E7F2EF;
     --color-text-secondary: #A1C2BD;
     --color-border: rgba(161, 194, 189, 0.2);
     --hamburger-bar-color: #E7F2EF;
+    --animation-timing: 200ms ease-in-out;
 }
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
+* { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+}
 
 body {
     font-family: var(--font-family);
     background: linear-gradient(to bottom, var(--color-background-start), var(--color-background-end));
     color: var(--color-text-primary);
-    height: 100vh;
-    width: 100vw;
+    height: 100vh; 
+    width: 100vw; 
     overflow: hidden;
 }
 
-/* --- LAYOUT Y MENÚ (Sin cambios significativos) --- */
-#app-layout { display: flex; height: 100vh; }
-#app-sidebar { width: 280px; height: 100%; padding: 20px; box-sizing: border-box; flex-shrink: 0; background: rgba(10, 10, 30, 0.6); backdrop-filter: blur(10px); border-right: 1px solid var(--color-border); transition: margin-left var(--transition-speed) ease; z-index: 1000; position: fixed; }
-#app-layout.sidebar-collapsed #app-sidebar { margin-left: -280px; }
-.sidebar-header { margin-bottom: 40px; }
-.sidebar-header h3 { margin: 0; font-size: 1.5rem; }
-.sidebar-nav { display: flex; flex-direction: column; gap: 15px; }
-.nav-link { padding: 10px 15px; border-radius: var(--border-radius-small); text-decoration: none; color: var(--color-text-secondary); font-weight: 200; transition: all 0.2s ease-in-out; }
-.nav-link:hover { background-color: rgba(255, 255, 255, 0.1); color: var(--color-text-primary); transform: translateX(5px); }
-#main-content-wrapper { flex-grow: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; width: 100%; }
-#app-header { position: fixed; top: 0; left: 0; width: 100%; padding: 25px 40px; z-index: 999; }
-#app-content { flex-grow: 1; overflow-y: auto; scroll-behavior: smooth; }
-.hamburger-menu { display: flex; flex-direction: column; gap: var(--hamburger-gap); width: max-content; cursor: pointer; z-index: 1001; }
-.hamburger-menu::before, .hamburger-menu::after, .hamburger-menu input { content: ""; width: var(--bar-width); height: var(--bar-height); background-color: var(--hamburger-bar-color); border-radius: 999px; transform-origin: left center; transition: opacity var(--animation-timing), width var(--animation-timing), transform var(--animation-timing); }
+/* --- LAYOUT Y ANIMACIÓN DEL SIDEBAR --- */
+#app-layout { 
+    display: flex; 
+    height: 100vh; 
+}
+
+#app-sidebar {
+    width: 280px; 
+    height: 100%; 
+    padding: 20px; 
+    box-sizing: border-box;
+    flex-shrink: 0; 
+    background: rgba(10, 10, 30, 0.8);
+    backdrop-filter: blur(10px); 
+    border-right: 1px solid var(--color-border);
+    transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+    z-index: 1001; 
+    position: fixed;
+}
+#app-layout.sidebar-collapsed #app-sidebar {
+    transform: translateX(-100%);
+}
+
+/* Cuando el sidebar está abierto, empuja el contenido principal (desktop) */
+#app-layout:not(.sidebar-collapsed) #main-content-wrapper {
+    margin-left: 280px; /* ancho del sidebar */
+}
+
+#main-content-wrapper {
+    flex-grow: 1; 
+    height: 100vh;
+    width: 100%;
+    overflow: hidden; /* El scroll lo maneja #app-content */
+    transition: margin-left 0.45s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+#app-content { 
+    height: 100%; 
+    overflow-y: auto; 
+    scroll-behavior: smooth; 
+}
+
+/* SOLUCIÓN: Hamburguesa siempre visible */
+#app-header {
+    position: fixed;
+    top: 25px;
+    left: 25px;
+    z-index: 1002; /* El z-index más alto para estar encima de todo */
+}
+.hamburger-menu { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 5px; 
+    width: max-content; 
+    cursor: pointer; 
+}
+.hamburger-menu::before, .hamburger-menu::after, .hamburger-menu input { 
+    content: ""; width: 24px; height: 3px; 
+    background-color: var(--hamburger-bar-color); border-radius: 999px; 
+    transform-origin: left center; transition: all var(--animation-timing); 
+}
 .hamburger-menu input { appearance: none; padding: 0; margin: 0; outline: none; pointer-events: none; }
 .hamburger-menu.is-active input { opacity: 0; width: 0; }
-.hamburger-menu.is-active::before { --hamburger-height: calc(3 * var(--bar-height) + 2 * var(--hamburger-gap)); --x-width: calc(var(--hamburger-height) * 1.41421356); transform: rotate(45deg) translate(0, calc(var(--bar-height) / -2)); width: var(--x-width); }
-.hamburger-menu.is-active::after { --hamburger-height: calc(3 * var(--bar-height) + 2 * var(--hamburger-gap)); --x-width: calc(var(--hamburger-height) * 1.41421356); transform: rotate(-45deg) translate(0, calc(var(--bar-height) / 2)); width: var(--x-width); }
+.hamburger-menu.is-active::before { transform: rotate(45deg) translate(2px, -3px); }
+.hamburger-menu.is-active::after { transform: rotate(-45deg) translate(2px, 3px); }
 
-/* --- FONDO ESTRELLADO Y ESTRELLAS FUGACES --- */
-.stars {
-    width: 1px;
-    height: 1px;
-    position: absolute;
-    background: white;
-    box-shadow: 2vw 5vh 2px white, 10vw 8vh 2px white, 15vw 15vh 1px white, 22vw 22vh 1px white, 28vw 12vh 2px white, 32vw 32vh 1px white, 38vw 18vh 2px white, 42vw 35vh 1px white, 48vw 25vh 2px white, 53vw 42vh 1px white, 58vw 15vh 2px white, 63vw 38vh 1px white, 68vw 28vh 2px white, 73vw 45vh 1px white, 78vw 32vh 2px white, 83vw 48vh 1px white, 88vw 20vh 2px white, 93vw 52vh 1px white, 98vw 35vh 2px white, 5vw 60vh 1px white, 12vw 65vh 2px white, 18vw 72vh 1px white, 25vw 78vh 2px white, 30vw 85vh 1px white, 35vw 68vh 2px white, 40vw 82vh 1px white, 45vw 92vh 2px white, 50vw 75vh 1px white, 55vw 88vh 2px white, 60vw 95vh 1px white, 65vw 72vh 2px white, 70vw 85vh 1px white, 75vw 78vh 2px white, 80vw 92vh 1px white, 85vw 82vh 2px white, 90vw 88vh 1px white, 95vw 75vh 2px white;
-    animation: twinkle 8s infinite linear;
+
+/* --- MENÚ LATERAL --- */
+.sidebar-header {
+    padding: 10px 15px;
+    margin-bottom: 30px;
 }
-
-.shooting-star {
-    position: absolute;
-    width: 2px; /* Más vertical */
-    height: 100px; /* Más vertical */
-    background: linear-gradient(to bottom, white, transparent);
-    animation: shoot 3s infinite ease-in;
+.sidebar-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
 }
-
-/* Posiciones y retrasos de las estrellas fugaces */
-.shooting-star:nth-child(2) { left: 10%; top: -100px; animation-delay: 0s; }
-.shooting-star:nth-child(3) { left: 30%; top: -100px; animation-delay: 1.2s; animation-duration: 2.5s; }
-.shooting-star:nth-child(4) { left: 50%; top: -100px; animation-delay: 2.1s; }
-.shooting-star:nth-child(5) { left: 70%; top: -100px; animation-delay: 0.5s; animation-duration: 2.8s; }
-.shooting-star:nth-child(6) { left: 90%; top: -100px; animation-delay: 3s; }
-
-@keyframes twinkle {
-    0%, 100% { opacity: 0.8; }
-    50% { opacity: 0.4; }
-}
-
-@keyframes shoot {
-    0% {
-        transform: translateY(0) rotate(-15deg); /* Rotación para efecto diagonal */
-        opacity: 1;
-    }
-    100% {
-        transform: translateY(120vh) rotate(-15deg);
-        opacity: 0;
-    }
-}
-
-/* --- SECCIÓN HERO, TÍTULO Y LUNA --- */
-#hero-background {
-    position: fixed; /* Fija el contenedor en la ventana */
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100vh;
-    z-index: 1; /* Detrás del contenido pero sobre el fondo */
+.sidebar-nav {
     display: flex;
-    justify-content: center;
-    align-items: center;
-    pointer-events: none; /* Permite hacer clic a través de él */
+    flex-direction: column;
+    gap: 5px;
+}
+.nav-link {
+    padding: 10px 15px;
+    border-radius: 6px;
+    text-decoration: none;
+    color: var(--color-text-secondary);
+    font-weight: 200;
+    font-size: 1rem;
+    transition: all 0.2s ease-in-out;
+}
+.nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--color-text-primary);
 }
 
+/* --- ESCENA DE FONDO FIJA --- */
+#hero-background {
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 100vh;
+    z-index: 1; 
+    pointer-events: none;
+}
+
+/* SOLUCIÓN: Estrellas visibles con su propio z-index */
+.stars {
+    position: absolute; top: 0; left: 0; width: 1px; height: 1px;
+    background: white;
+    box-shadow: 2vw 5vh 1px white, 10vw 8vh 1px white, 15vw 15vh 0px white, 22vw 22vh 1px white, 28vw 12vh 1px white, 32vw 32vh 0px white, 38vw 18vh 1px white, 42vw 35vh 1px white, 48vw 25vh 1px white, 53vw 42vh 0px white, 58vw 15vh 1px white, 63vw 38vh 1px white, 68vw 28vh 1px white, 73vw 45vh 0px white, 78vw 32vh 1px white, 83vw 48vh 1px white, 88vw 20vh 1px white, 93vw 52vh 0px white, 98vw 35vh 1px white, 5vw 60vh 1px white, 12vw 65vh 1px white, 18vw 72vh 0px white, 25vw 78vh 1px white, 30vw 85vh 1px white, 35vw 68vh 0px white, 40vw 82vh 1px white, 45vw 92vh 1px white, 50vw 75vh 0px white, 55vw 88vh 1px white, 60vw 95vh 1px white, 65vw 72vh 0px white, 70vw 85vh 1px white, 75vw 78vh 1px white, 80vw 92vh 0px white, 85vw 82vh 1px white, 90vw 88vh 1px white, 95vw 75vh 0px white;
+    animation: twinkle 12s infinite linear;
+    z-index: 2;
+}
+
+/* MEJORA: Luna circular completa y centrada */
 .moon {
-    /* Hacemos la luna mucho más grande y la centramos */
-    width: min(90vw, 90vh); /* Ocupará el 90% del lado más corto de la pantalla */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: min(90vw, 90vh);
     height: min(90vw, 90vh);
     background-color: #f0f0f0;
     border-radius: 50%;
     box-shadow: 0 0 60px 10px #ffffff, 0 0 100px 20px rgba(255, 255, 255, 0.7), inset -40px -20px 80px rgba(0, 0, 0, 0.2);
-    position: absolute; /* Posicionado dentro del #hero-background */
-    
-    /* La transformación inicial la aplicará JS, pero añadimos transición para suavidad */
-    transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+    transform: translate(-50%, -50%); /* Centrado perfecto */
+    transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.8s ease-out;
+    z-index: 3;
+}
+
+#crow-container {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    display: flex; justify-content: center; align-items: center;
+    opacity: 0; transition: opacity 1.5s ease-out; z-index: 4;
 }
 
 #crow-image {
-    position: absolute; /* También centrado en el #hero-background */
-    width: clamp(150px, 20vw, 250px); /* Tamaño adaptable */
-    height: auto;
-    color: #000000;
-    z-index: 10; /* Encima de la luna */
-    
-    /* Oculto por defecto y con transición para aparecer suavemente */
-    opacity: 0;
-    transform: translateY(20px); /* Sube un poco al aparecer */
-    transition: opacity 1s ease-out 0.3s, transform 1s ease-out 0.3s;
+    width: clamp(180px, 20vw, 280px); color: #000;
+    transform: translateY(40px) scale(0.9);
+    transition: transform 1.5s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-/* El título principal se posiciona de forma relativa para poder moverse */
+/* --- CONTENIDO QUE SE DESPLAZA --- */
 #hero {
-    height: 100vh;
-    display: flex;
-    justify-content: center;
+    height: 100vh; 
+    display: flex; 
+    justify-content: center; 
     align-items: center;
-    position: relative;
-    z-index: 5; /* Por encima del fondo pero debajo del menú */
-}
-
-#main-title {
-    font-size: clamp(3rem, 10vw, 8rem);
-    color: #FFFFFF;
-    font-weight: 700;
-    text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
-    
-    /* Transición para que la subida sea suave */
-    transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.5s ease;
-}
-
-/* Sección de contenido para permitir el scroll */
-#content-after-hero {
-    height: 100vh; /* Ocupa espacio para poder hacer scroll */
-    padding: 100px 40px;
-    position: relative;
+    position: relative; 
     z-index: 5;
-    background: var(--color-background-end); /* Fondo sólido para que no se vea la luna detrás */
+}
+#main-title {
+    font-size: clamp(3rem, 10vw, 8rem); 
+    color: #FFFFFF; 
+    font-weight: 700;
+    text-shadow: 0 0 15px rgba(0, 0, 0, 0.8), 0 0 25px rgba(0, 0, 0, 0.6);
+    transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.8s ease;
+}
+
+/* SOLUCIÓN: Transición de la luna a la sección de herramientas */
+#tools-section {
+    min-height: 100vh; 
+    padding: 150px 40px 100px;
+    position: relative; 
+    z-index: 5; 
+    text-align: center;
+    background: transparent; /* SIN FONDO SÓLIDO */
+}
+#tools-section::before {
+    content: ''; 
+    position: absolute; 
+    top: 0; 
+    left: 0;
+    width: 100%; 
+    height: 100%;
+    /* Gradiente que oscurece la luna progresivamente */
+    background: linear-gradient(to bottom, 
+        rgba(25, 24, 59, 0) 0%, 
+        rgba(25, 24, 59, 0.9) 40%, 
+        var(--color-background-end) 70%
+    );
+    z-index: -1;
+}
+
+#tools-section h2 {
+    font-size: 3.5rem; 
+    margin-bottom: 3rem;
+    color: var(--color-text-primary);
+    text-shadow: 0 0 10px rgba(161, 194, 189, 0.5);
+}
+
+.tools-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+.tool-card {
+    background-color: rgba(42, 41, 88, 0.5);
+    border: 1px solid rgba(161, 194, 189, 0.3);
+    padding: 2.5rem 2rem;
+    border-radius: 16px;
+    backdrop-filter: blur(5px);
+    transition: transform 0.3s ease, border-color 0.3s ease;
+    cursor: pointer;
     text-align: center;
 }
-#content-after-hero h2 {
-    font-size: 3rem;
+.tool-card:hover {
+    transform: translateY(-8px);
+    border-color: var(--color-primary);
+}
+.tool-card h3 {
+    font-size: 1.5rem;
+    font-weight: 400; /* Menos negrita, como en la imagen */
+    color: var(--color-text-secondary);
 }

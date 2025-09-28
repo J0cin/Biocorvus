@@ -6,16 +6,14 @@
     <title>BioCorvus | Plataforma Bioinformática</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://fonts.gstatic" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Zalando+Sans+Expanded:wght@200;400;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div id="app-layout">
         <!-- Menú Lateral (Sidebar) -->
         <aside id="app-sidebar">
-            <div class="sidebar-header">
-                <h3>Herramientas</h3>
-            </div>
+            <div class="sidebar-header"><h3>Herramientas</h3></div>
             <nav class="sidebar-nav">
                 <a href="Fastqc.html" class="nav-link">Quality Inspector</a>
                 <a href="cleaner.html" class="nav-link">Sequence Cleaner</a>
@@ -35,27 +33,33 @@
 
             <!-- Contenido que se puede desplazar (scroll) -->
             <main id="app-content">
-                <!-- Efectos de fondo: estrellas -->
-                <div class="stars"></div>
-                
-                <!-- NUEVA ESTRUCTURA: Contenedor de fondo fijo para la luna y el cuervo -->
+                <!-- Contenedor fijo para la escena de fondo -->
                 <div id="hero-background">
+                    <!-- Las estrellas ahora están dentro para asegurar su z-index -->
+                    <div class="stars"></div>
                     <div class="moon"></div>
-                    <!-- Usamos una etiqueta <img> para cargar tu archivo SVG -->
-                    <img src="assets/icons/crow.svg" alt="Silueta de un cuervo" id="crow-image">
+                    <!-- Contenedor simplificado solo para el cuervo -->
+                    <div id="crow-container">
+                        <img src="assets/icons/fcrow.svg" alt="Silueta de un cuervo" id="crow-image">
+                    </div>
                 </div>
 
-                <!-- Sección Hero: Solo contiene el título para que se desplace -->
+                <!-- Sección Hero: Título -->
                 <section id="hero">
                     <div class="hero-content">
                         <h1 id="main-title">BioCorvus</h1>
                     </div>
                 </section>
 
-                <!-- NUEVO: Contenido de relleno para forzar el scroll y ver el efecto -->
-                <section id="content-after-hero">
-                    <h2>Nuestras Herramientas</h2>
-                    <p>Desplázate hacia arriba para volver a la escena principal.</p>
+                <!-- Sección de Herramientas -->
+                <section id="tools-section">
+                    <h2>My Tools</h2>
+                    <div class="tools-grid">
+                        <a class="tool-card" href="Fastqc.html"><h3>Quality Inspector</h3></a>
+                        <a class="tool-card" href="cleaner.html"><h3>Sequence Cleaner</h3></a>
+                        <a class="tool-card" href="genome_scout.html"><h3>Genome Scout</h3></a>
+                        <a class="tool-card" href="#"><h3>Workflow Builder</h3></a>
+                    </div>
                 </section>
             </main>
         </div>
