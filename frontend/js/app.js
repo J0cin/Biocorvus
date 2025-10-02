@@ -72,7 +72,7 @@ const sendMessage = async () => {
   try {
     // ¡IMPORTANTE! Reemplaza esta URL con la URL de tu proyecto en Vercel
     // cuando lo despliegues. Para probar en local, sería 'http://localhost:3001/api/chat'.
-    const response = await fetch('https://biocorvus.vercel.app/api/chat', { // <-- CAMBIA ESTO
+    const response = await fetch('https://biocorvus-3wx51y6t2-boris-projects-3d0e8363.vercel.app', { // <-- CAMBIA ESTO
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
