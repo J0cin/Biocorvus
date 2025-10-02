@@ -10,3 +10,5 @@ backend/results/
 # Archivos de sistema operativo
 .DS_Store
 Thumbs.db
+# Esto ignora el archivo .env que contiene tu MISTRAL_API_KEY.
+.env

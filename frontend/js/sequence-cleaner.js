@@ -2,7 +2,6 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- SELECTORES ---
-    const API_BASE_URL = 'http://158.42.124.228:8000';
     const appLayout = document.getElementById('app-layout');
     const sidebarToggleBtn = document.getElementById('sidebar-toggle-btn');
     // newer HTML (cleaner.html) uses a checkbox input inside the label
@@ -49,79 +48,233 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- LÓGICA ASÍNCRONA DE LA HERRAMIENTA ---
 
-    // 1. Función para consultar el estado del trabajo
-    function pollJobStatus(jobId) {
-        pollingInterval = setInterval(async () => {
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/jobs/${jobId}`);
-                if (!response.ok) throw new Error(`Polling failed: ${response.status}`);
-                
-                const jobStatus = await response.json();
-                const statusDetail = jobStatus.details?.status || jobStatus.state;
-                scStatusMessage.textContent = `Working on it... (State: ${statusDetail})`;
-
-                if (jobStatus.state === 'SUCCESS' || jobStatus.state === 'SUCCESSFUL') {
-                    clearInterval(pollingInterval);
-                    scStatusMessage.textContent = 'Analysis complete!';
-                    
-                    const finalResults = jobStatus.result;
-                    if (!finalResults) throw new Error("Job succeeded but returned no results.");
-
-                    scLoader.classList.add('hidden');
-                    scStatusContainer.classList.add('hidden');
-                    scResultsSection.classList.remove('hidden');
-                    renderResults(finalResults);
-                    cleanedFastqContent = finalResults.cleaned_data;
-                } else if (jobStatus.state === 'FAILURE') {
-                    clearInterval(pollingInterval);
-                    scLoader.classList.add('hidden');
-                    const errorMessage = jobStatus.result || 'An unknown error occurred in the worker.';
-                    scStatusMessage.textContent = `Error: ${errorMessage}`;
-                }
-            } catch (error) {
-                clearInterval(pollingInterval);
-                scStatusMessage.textContent = `Error polling for status: ${error.message}`;
-                scLoader.classList.add('hidden');
+    // Parsea el contenido de un archivo FASTQ en un array de objetos.
+    //  * Equivalente a FastqGeneralIterator de BioPython.
+    //  * @param {string} textContent - El contenido completo del archivo FASTQ.
+    //  * @returns {Array<Object>} Un array de lecturas, donde cada una es {title, seq, qual}.
+    //  */
+    function parseFastq(textContent) {
+        const lines = textContent.split('\n');
+        const reads = [];
+        for (let i = 0; i < lines.length; i += 4) {
+            // Asegurarse de que tenemos las 4 líneas para una lectura completa
+            if (i + 3 < lines.length && lines[i].startsWith('@')) {
+                reads.push({
+                    title: lines[i].substring(1), // Sin el '@'
+                    seq: lines[i + 1],
+                    qual: lines[i + 3]
+                });
             }
-        }, 3000);
+        }
+        return reads;
     }
 
-    // 2. Manejador del envío del formulario
+    /**
+     * Recorta una lectura usando una ventana deslizante de calidad.
+     * Equivalente a la función `sliding_window_trim` en worker.py.
+     * @param {string} seq - La secuencia de ADN.
+     * @param {string} qual - La cadena de calidad Phred.
+     * @param {number} qualityThreshold - El umbral de calidad promedio de la ventana.
+     * @param {number} windowSize - El tamaño de la ventana.
+     * @returns {{seq: string, qual: string}} La secuencia y calidad recortadas.
+     */
+    function slidingWindowTrim(seq, qual, qualityThreshold, windowSize = 4) {
+        if (!seq) return { seq: "", qual: "" };
+        for (let i = 0; i <= seq.length - windowSize; i++) {
+            const windowQuals = qual.substring(i, i + windowSize);
+            let sumOfScores = 0;
+            for (let j = 0; j < windowQuals.length; j++) {
+                sumOfScores += windowQuals.charCodeAt(j) - 33; // Phred+33
+            }
+            if ((sumOfScores / windowSize) < qualityThreshold) {
+                return { seq: seq.substring(0, i), qual: qual.substring(0, i) };
+            }
+        }
+        return { seq, qual };
+    }
+
+    /**
+     * Comprueba si una secuencia es de baja complejidad.
+     * Equivalente a `is_low_complexity` en worker.py.
+     * @param {string} seq - La secuencia a comprobar.
+     * @param {number} threshold - El umbral de frecuencia para el nucleótido más común.
+     * @returns {boolean} - True si es de baja complejidad.
+     */
+    function isLowComplexity(seq, threshold = 0.5) {
+        if (!seq) return true;
+        const distinctBases = new Set(seq);
+        if (distinctBases.size <= 2) {
+            const counts = {};
+            for (const base of seq) {
+                counts[base] = (counts[base] || 0) + 1;
+            }
+            const mostCommonCount = Math.max(...Object.values(counts));
+            if (mostCommonCount / seq.length > threshold) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * El núcleo del proceso de limpieza. Itera sobre las lecturas y aplica los filtros.
+     * Reemplaza toda la lógica del bucle principal en `process_cleaner_job`.
+     * @param {Array<Object>} reads - El array de lecturas parseadas.
+     * @param {Object} params - Los parámetros del formulario.
+     * @returns {Object} - Un objeto con las estadísticas y las lecturas limpias.
+     */
+    function cleanReads(reads, params) {
+        const stats = {
+            reads_processed: 0,
+            reads_passed: 0,
+            discard_reasons: {
+                duplicate: { count: 0 },
+                quality_failed: { count: 0 },
+                too_short: { count: 0 },
+                too_long: { count: 0 },
+                too_many_n: { count: 0 },
+                low_complexity: { count: 0 }
+            }
+        };
+        const cleanedReads = [];
+        const seenSequences = new Set();
+
+        for (const read of reads) {
+            stats.reads_processed++;
+            let { title, seq, qual } = read;
+            let discard = false;
+
+            // 1. Deduplicación (si está activado)
+            if (params.deduplicate) {
+                if (seenSequences.has(seq)) {
+                    stats.discard_reasons.duplicate.count++;
+                    continue; // Saltar al siguiente read
+                }
+                seenSequences.add(seq);
+            }
+
+            // 2. Recorte de adaptadores
+            if (params.adapter && seq.includes(params.adapter)) {
+                const pos = seq.indexOf(params.adapter);
+                seq = seq.substring(0, pos);
+                qual = qual.substring(0, pos);
+            }
+
+            // 3. Recorte por calidad (ventana deslizante)
+            const trimmed = slidingWindowTrim(seq, qual, params.quality_threshold);
+            seq = trimmed.seq;
+            qual = trimmed.qual;
+
+            // 4. Comprobar filtros en orden
+            if (!seq) {
+                stats.discard_reasons.quality_failed.count++;
+                discard = true;
+            } else if (seq.length < params.min_length) {
+                stats.discard_reasons.too_short.count++;
+                discard = true;
+            } else if (seq.length > params.max_length) {
+                stats.discard_reasons.too_long.count++;
+                discard = true;
+            } else if ((seq.match(/N/g) || []).length / seq.length * 100 > params.max_n_percent) {
+                stats.discard_reasons.too_many_n.count++;
+                discard = true;
+            } else if (params.filter_complexity && isLowComplexity(seq)) {
+                stats.discard_reasons.low_complexity.count++;
+                discard = true;
+            }
+
+            if (!discard) {
+                stats.reads_passed++;
+                cleanedReads.push({ title, seq, qual });
+            }
+        }
+        
+        stats.reads_discarded = stats.reads_processed - stats.reads_passed;
+        return { stats, cleanedReads };
+    }
+
+    /**
+     * Reconstruye el contenido de un archivo FASTQ a partir de un array de lecturas limpias.
+     * @param {Array<Object>} cleanedReads - Las lecturas que pasaron los filtros.
+     * @returns {string} - El contenido del nuevo archivo FASTQ.
+     */
+    function reconstructFastq(cleanedReads) {
+        return cleanedReads.map(r => `@${r.title}\n${r.seq}\n+\n${r.qual}`).join('\n');
+    }
+
+
+    // --- LÓGICA ASÍNCRONA (AHORA 100% LOCAL) ---
+
     async function handleFormSubmit(event) {
         event.preventDefault();
         resetUI();
 
+        const fileInput = document.getElementById('sc-fastq-file');
+        const file = fileInput.files[0];
+        if (!file) {
+            scStatusMessage.textContent = 'Error: Please select a FASTQ file.';
+            scStatusContainer.classList.remove('hidden');
+            return;
+        }
+
         scStatusContainer.classList.remove('hidden');
         scLoader.classList.remove('hidden');
-        scStatusMessage.textContent = 'Submitting job to the queue...';
+        scStatusMessage.textContent = 'Reading file into memory...';
 
-        const formData = new FormData(scForm);
+        // Usamos FileReader para leer el archivo en el navegador
+        const reader = new FileReader();
 
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/clean`, {
-                method: 'POST',
-                body: formData
-            });
+        reader.onload = function(e) {
+            try {
+                scStatusMessage.textContent = 'File read. Starting cleaning process...';
+                const fileContent = e.target.result;
 
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({ detail: `Server error: ${response.status}` }));
-                throw new Error(errorData.detail);
+                // 1. Recoger parámetros del formulario
+                const formData = new FormData(scForm);
+                const params = {
+                    adapter: formData.get('adapter'),
+                    quality_threshold: parseInt(formData.get('quality_threshold'), 10),
+                    min_length: parseInt(formData.get('min_length'), 10),
+                    max_length: parseInt(formData.get('max_length'), 10),
+                    max_n_percent: parseInt(formData.get('max_n_percent'), 10),
+                    deduplicate: formData.has('deduplicate'),
+                    filter_complexity: formData.has('filter_complexity')
+                };
+
+                // Simular un pequeño retardo para que la UI se actualice
+                setTimeout(() => {
+                    // 2. Ejecutar el pipeline de limpieza
+                    const reads = parseFastq(fileContent);
+                    const { stats, cleanedReads } = cleanReads(reads, params);
+                    
+                    // 3. Guardar el contenido para la descarga
+                    cleanedFastqContent = reconstructFastq(cleanedReads);
+
+                    // 4. Mostrar los resultados
+                    scStatusMessage.textContent = 'Analysis complete!';
+                    scLoader.classList.add('hidden');
+                    scStatusContainer.classList.add('hidden');
+                    scResultsSection.classList.remove('hidden');
+                    renderResults({ summary: stats }); // La función de renderizado es compatible
+
+                }, 50); // 50ms de retardo
+
+            } catch (error) {
+                scStatusMessage.textContent = `An error occurred during processing: ${error.message}`;
+                scLoader.classList.add('hidden');
             }
+        };
 
-            const initialData = await response.json();
-            const jobId = initialData.job_id;
-            if (!jobId) throw new Error("Did not receive a valid job ID from the server.");
-            
-            scStatusMessage.textContent = 'Job accepted. Waiting for worker to start...';
-            pollJobStatus(jobId);
-
-        } catch (error) {
-            scStatusMessage.textContent = `Error: ${error.message}`;
+        reader.onerror = function() {
+            scStatusMessage.textContent = 'Error reading the file.';
             scLoader.classList.add('hidden');
-        }
+        };
+
+        // Iniciar la lectura del archivo
+        reader.readAsText(file);
     }
 
-    // --- FUNCIONES DE RESULTADOS ---
+    // --- FUNCIONES DE RESULTADOS (sin cambios, ya es compatible) ---
     function renderResults(results) {
         if (!results || !results.summary) {
             scResultsSection.innerHTML = '<h3>Error</h3><p>Could not retrieve valid results.</p>';
@@ -138,7 +291,7 @@ document.addEventListener('DOMContentLoaded', () => {
             too_many_n: "Exceeded 'N' Limit", low_complexity: "Low Complexity"
         };
         let tableRows = '';
-        const sortedReasons = Object.entries(summary.details || {})
+        const sortedReasons = Object.entries(summary.discard_reasons || {})
             .filter(([, data]) => data.count > 0)
             .sort(([, a], [, b]) => b.count - a.count);
 
@@ -186,52 +339,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function resetUI() {
-        if (pollingInterval) clearInterval(pollingInterval);
         scStatusContainer.classList.add('hidden');
         scResultsSection.classList.add('hidden');
         scLoader.classList.add('hidden');
         cleanedFastqContent = "";
     }
 
-    // --- INICIALIZACIÓN ---
+    // --- INICIALIZACIÓN (simplificada) ---
     function init() {
         const savedTheme = localStorage.getItem('theme') || 'dark';
         applyTheme(savedTheme);
 
-        // Sidebar: prefer the checkbox input (cleaner.html), fallback to label/button
         if (sidebarToggleInput) {
-            // sync initial sidebar state from existing classes
-            try {
-                const initialChecked = sidebarToggleBtn ? sidebarToggleBtn.classList.contains('is-active') : !appLayout.classList.contains('sidebar-collapsed');
-                sidebarToggleInput.checked = !!initialChecked;
-                if (appLayout) appLayout.classList.toggle('sidebar-collapsed', !initialChecked);
-            } catch (e) {
-                // ignore
-            }
             sidebarToggleInput.addEventListener('change', (e) => {
                 const checked = !!e.target.checked;
                 if (appLayout) appLayout.classList.toggle('sidebar-collapsed', !checked);
                 if (sidebarToggleBtn) sidebarToggleBtn.classList.toggle('is-active', checked);
             });
-        } else if (sidebarToggleBtn) {
-            sidebarToggleBtn.addEventListener('click', toggleSidebar);
         }
 
-        // Theme control: support both checkbox inputs and a button/div control
-        if (themeCheckbox) {
-            // checkbox: when changed, apply theme
-            themeCheckbox.checked = savedTheme === 'light';
-            themeCheckbox.addEventListener('change', handleThemeChange);
-        } else if (themeToggleBtn) {
-            // button-like toggle: set visual state and attach click
-            try { themeToggleBtn.classList.toggle('is-light', savedTheme === 'light'); } catch (e) {}
-            themeToggleBtn.addEventListener('click', () => {
-                const current = document.documentElement.getAttribute('data-theme') || 'dark';
-                const newTheme = current === 'dark' ? 'light' : 'dark';
-                localStorage.setItem('theme', newTheme);
-                applyTheme(newTheme);
-                try { themeToggleBtn.classList.toggle('is-light', newTheme === 'light'); } catch (e) {}
-            });
+        if (themeToggleBtn) {
+            // Prefer centralized theme manager
+            if (window.toggleTheme) {
+                themeToggleBtn.addEventListener('click', () => window.toggleTheme());
+            } else {
+                themeToggleBtn.addEventListener('click', () => {
+                    const current = document.documentElement.getAttribute('data-theme') || 'dark';
+                    const newTheme = current === 'dark' ? 'light' : 'dark';
+                    localStorage.setItem('theme', newTheme);
+                    applyTheme(newTheme);
+                });
+            }
         }
 
         if (scForm) scForm.addEventListener('submit', handleFormSubmit);

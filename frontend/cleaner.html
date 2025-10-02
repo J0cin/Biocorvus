@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sequence Cleaner</title>
     <link rel="stylesheet" href="css/cleaner.css">
+    <link rel="stylesheet" href="css/main.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Zalando+Sans+Expanded:wght@200;700&display=swap" rel="stylesheet">
@@ -18,8 +19,8 @@
             <nav class="sidebar-nav">
                 <a href="Fastqc.html" class="nav-link">Quality Inspector</a>
                 <a href="cleaner.html" class="nav-link active">Sequence Cleaner</a>
-                <a href="genome_scout.html" class="nav-link">Genome Scout</a>
-                <a href="#" class="nav-link">Workflow Builder</a>
+                <a href="aligner.html" class="nav-link">Sequence Aligner</a>
+                <a href="index.html" class="nav-link">Main</a>
             </nav>
         </aside>
 
@@ -43,66 +44,91 @@
                     <h1>Sequence Cleaner</h1>
                     <p class="description">Trim, filter, and clean your FASTQ files with a comprehensive set of tools.</p>
                 </section>
-<div class="tool-section">
-    <h2>Cleaning Parameters</h2>
-    <form id="sc-form">
-        <div class="file-input-wrapper">
-            <label for="sc-fastq-file">FASTQ File to Clean:</label>
-            <!-- El 'name' aquí ya estaba bien -->
-            <input type="file" id="sc-fastq-file" name="file" class="fastq-file-input" accept=".fastq,.fq,.fastq.gz,.fq.gz" required>
-        </div>
-        <hr class="separator">
-        <div class="parameter-grid">
-            <div class="parameter-group">
-                <label for="sc-adapter-sequence">Adapter Sequence</label>
-                <!-- AÑADIDO: name="adapter" -->
-                <input type="text" id="sc-adapter-sequence" name="adapter" placeholder="e.g., AGATCGGAAGAG" class="text-input">
-            </div>
-            <div class="parameter-group">
-                <label for="sc-quality-threshold">Sliding Window Quality (Phred)</label>
-                <!-- AÑADIDO: name="quality_threshold" -->
-                <input type="number" id="sc-quality-threshold" name="quality_threshold" value="20" min="0" max="40" class="text-input">
-            </div>
-            <div class="parameter-group">
-                <label for="sc-min-length">Minimum Length</label>
-                <!-- AÑADIDO: name="min_length" -->
-                <input type="number" id="sc-min-length" name="min_length" value="50" min="1" class="text-input">
-            </div>
-            <div class="parameter-group">
-                <label for="sc-max-length">Maximum Length</label>
-                <!-- AÑADIDO: name="max_length" -->
-                <input type="number" id="sc-max-length" name="max_length" value="150" min="1" class="text-input">
-            </div>
-            <div class="parameter-group">
-                <label for="sc-max-n-percent">Max Ambiguous Bases (%)</label>
-                <!-- AÑADIDO: name="max_n_percent" -->
-                <input type="number" id="sc-max-n-percent" name="max_n_percent" value="10" min="0" max="100" class="text-input">
-            </div>
-            <div class="parameter-group checkbox-group">
-                <div class="checkbox-wrapper">
-                    <!-- AÑADIDO: name="deduplicate" -->
-                    <input type="checkbox" id="sc-deduplicate" name="deduplicate" value="true">
-                    <label for="sc-deduplicate">Remove Duplicates</label>
-                </div>
-                <div class="checkbox-wrapper">
-                    <!-- AÑADIDO: name="filter_complexity" -->
-                    <input type="checkbox" id="sc-filter-complexity" name="filter_complexity" value="true">
-                    <label for="sc-filter-complexity">Filter Low Complexity</label>
-                </div>
-            </div>
-        </div>
-        <div class="controls-wrapper">
-            <div class="submit-wrapper">
-                <button type="submit" class="button" id="sc-clean-button">
-                    <div class="button_inner">
-                        <img src="https://i.ibb.co/7Jd2p0N/right-arrow-white.png" alt="arrow" class="button_arrow"/>
-                        <span class="t">Clean Sequence</span>
+
+
+                <section class="explanation-box">
+                    <h4>User Guide</h4>
+                    <div class="explanation-grid">
+                        <div>
+                            <h5>How to Use</h5>
+                            <p><strong>1. Upload File:</strong> Select the FASTQ file you want to process.</p>
+                            <p><strong>2. Configure Parameters:</strong> Adjust the cleaning settings below to fit your data.</p>
+                            <p><strong>3. Run:</strong> Click "Clean Sequence" to start the process.</p>
+                            <p><strong>4. Download:</strong> Once finished, a download button will appear for you to get the cleaned FASTQ file.</p>
+                        </div>
+                        <div>
+                            <h5>Parameter Guide</h5>
+                            <ul>
+                                <li><strong>Adapter Sequence:</strong> The specific DNA sequence from the sequencing adapter to be removed from the 3' end of the reads.</li>
+                                <li><strong>Sliding Window Quality:</strong> Trims reads from the 3' end if the average quality within a moving window (typically 4-5 bp) drops below this Phred score.</li>
+                                <li><strong>Minimum/Maximum Length:</strong> Discards reads that are too short or too long after trimming.</li>
+                                <li><strong>Max Ambiguous Bases (%):</strong> Discards reads with a percentage of 'N' bases higher than this value.</li>
+                            </ul>
+                        </div>
                     </div>
-                </button>
+                </section>
+            <div class="tool-section">
+                <h2>Cleaning Parameters</h2>
+                <form id="sc-form">
+                    <div class="file-input-wrapper">
+                        <label for="sc-fastq-file">FASTQ File to Clean:</label>
+                        <!-- El 'name' aquí ya estaba bien -->
+                        <label for="sc-fastq-file" class="custom-file-upload">File</label>
+                        <input type="file" id="sc-fastq-file" name="file" class="fastq-file-input" accept=".fastq,.fq,.fastq.gz,.fq.gz" required>
+                        <span class="file-name-display">No file selected</span>
+                    </div>
+                    <hr class="separator">
+                    <div class="parameter-grid">
+                        <div class="parameter-group">
+                            <label for="sc-adapter-sequence">Adapter Sequence</label>
+                            <!-- AÑADIDO: name="adapter" -->
+                            <input type="text" id="sc-adapter-sequence" name="adapter" placeholder="e.g., AGATCGGAAGAG" class="text-input">
+                        </div>
+                        <div class="parameter-group">
+                            <label for="sc-quality-threshold">Sliding Window Quality (Phred)</label>
+                            <!-- AÑADIDO: name="quality_threshold" -->
+                            <input type="number" id="sc-quality-threshold" name="quality_threshold" value="20" min="0" max="40" class="text-input">
+                        </div>
+                        <div class="parameter-group">
+                            <label for="sc-min-length">Minimum Length</label>
+                            <!-- AÑADIDO: name="min_length" -->
+                            <input type="number" id="sc-min-length" name="min_length" value="50" min="1" class="text-input">
+                        </div>
+                        <div class="parameter-group">
+                            <label for="sc-max-length">Maximum Length</label>
+                            <!-- AÑADIDO: name="max_length" -->
+                            <input type="number" id="sc-max-length" name="max_length" value="150" min="1" class="text-input">
+                        </div>
+                        <div class="parameter-group">
+                            <label for="sc-max-n-percent">Max Ambiguous Bases (%)</label>
+                            <!-- AÑADIDO: name="max_n_percent" -->
+                            <input type="number" id="sc-max-n-percent" name="max_n_percent" value="10" min="0" max="100" class="text-input">
+                        </div>
+                        <div class="parameter-group checkbox-group">
+                            <div class="checkbox-wrapper">
+                                <!-- AÑADIDO: name="deduplicate" -->
+                                <input type="checkbox" id="sc-deduplicate" name="deduplicate" value="true">
+                                <label for="sc-deduplicate">Remove Duplicates</label>
+                            </div>
+                            <div class="checkbox-wrapper">
+                                <!-- AÑADIDO: name="filter_complexity" -->
+                                <input type="checkbox" id="sc-filter-complexity" name="filter_complexity" value="true">
+                                <label for="sc-filter-complexity">Filter Low Complexity</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="controls-wrapper">
+                        <div class="submit-wrapper">
+                            <button type="submit" class="button" id="sc-clean-button">
+                                <div class="button_inner">
+                                    <img src="assets/icons/right.png" alt="arrow" class="button_arrow"/>
+                                    <span class="t">Clean Sequence</span>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </form>
             </div>
-        </div>
-    </form>
-</div>
                 <div id="sc-status-container" class="hidden tool-section">
                     <h3>Cleaning Status:</h3><p id="sc-status-message">Waiting for job...</p>
                     <div class="loader-wrapper"><div id="sc-loader" class="hidden"><div id="box"></div><div id="hill"></div></div></div>
@@ -111,6 +137,8 @@
             </main>
         </div>
     </div>
+    <script src="js/theme-manager.js"></script>
     <script src="js/sequence-cleaner.js"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>
