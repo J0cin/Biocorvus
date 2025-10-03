@@ -1,7 +1,5 @@
 fastapi
 uvicorn
 requests
-sentence-transformers
-faiss-cpu
-PyPDF2
-numpy
+pydantic
+python-dotenv
