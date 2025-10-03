@@ -33,7 +33,7 @@ app.post('/api/chat', async (req, res) => {
             },
             body: JSON.stringify({
                 // Aquí es donde probablemente uses el ID de tu agente como el modelo
-                model: 'ag:f7ca0924:20251002:biocorvus:ccb1dc5d', // O el modelo que corresponda a tu agente, ej: 'ft:mistral-large:...'
+                model: 'mistralai/mistral-7b-instruct:free', // O el modelo que corresponda a tu agente, ej: 'ft:mistral-large:...'
                 messages: [
                     { role: 'system', content: systemPrompt },
                     { role: 'user', content: message }
