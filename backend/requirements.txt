@@ -1,7 +1,7 @@
 fastapi
-uvicorn[standard]
-celery
-redis
-biopython
-numpy
-python-multipart
+uvicorn
+pydantic
+requests
+sentence-transformers
+faiss-cpu
+python-dotenv

@@ -83,11 +83,14 @@ document.addEventListener('DOMContentLoaded', () => {
             chatMessages.scrollTop = chatMessages.scrollHeight;
 
             try {
-                const response = await fetch('/api/chat', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ message: userText }),
-                });
+               const response = await fetch('https://biocorvus.onrender.com', { 
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                // El body ahora espera 'user_message', no 'message'
+                body: JSON.stringify({ user_message: userText }), 
+            });
                 if (!response.ok) throw new Error(`API error: ${response.status}`);
                 const data = await response.json();
                 thinkingMessage.innerText = data.reply || "No he podido generar una respuesta.";
