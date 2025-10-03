@@ -146,7 +146,32 @@
             </main>
         </div>
     </div>
-    
+    <div id="chatbot-container" class="chatbot-container">
+        <!-- Botón flotante que abre/cierra el chat -->
+        <button id="chatbot-toggle-btn" class="chatbot-toggle" aria-label="Abrir chat de BioCorvus Assistant">
+            <svg class="icon-open" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+            <svg class="icon-close" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+
+        <!-- Ventana del chat -->
+        <div id="chat-widget" class="chat-widget" aria-hidden="true">
+            <div class="chat-header">
+                <h3>BioCorvus Assistant</h3>
+                <p>Experto en herramientas bioinformáticas</p>
+            </div>
+
+            <div id="chat-messages" class="chat-messages" role="log" aria-live="polite">
+                <div class="message system-message">Hola, soy BioCorvus Assistant. ¿En qué puedo ayudarte?</div>
+            </div>
+
+            <div class="chat-input-area">
+                <input type="text" id="chat-input" class="chat-input" placeholder="Pregúntame algo..." autocomplete="off" />
+                <button id="chat-send-btn" class="chat-send-btn" aria-label="Enviar mensaje">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                </button>
+            </div>
+        </div>
+    </div>
     <!-- <script src="js/theme-manager.js"></script> -->
     <script src="js/app.js"></script>
     <script src="js/aligner.js"></script>

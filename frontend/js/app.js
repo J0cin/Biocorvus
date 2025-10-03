@@ -49,30 +49,58 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // --- CHATBOT WIDGET INITIALIZATION ---
-  const chatbotContainer = document.getElementById('chatbot-container');
+      const chatbotContainer = document.getElementById('chatbot-container');
+
     if (chatbotContainer) {
         const chatbotToggleBtn = document.getElementById('chatbot-toggle-btn');
         const chatWidget = document.getElementById('chat-widget');
+        const chatMessages = document.getElementById('chat-messages');
         const chatInput = document.getElementById('chat-input');
         const chatSendBtn = document.getElementById('chat-send-btn');
-        const chatMessages = document.getElementById('chat-messages');
+        const initialSystemMessage = `<div class="message system-message">Hola, soy BioCorvus Assistant. ¿En qué puedo ayudarte sobre Quality Inspector, Sequence Cleaner o Sequence Aligner?</div>`;
 
-        // Lógica para abrir y cerrar el widget
+        // Novedad: Función para cerrar el chat de forma elegante
+        const closeChat = () => {
+            appendMessage("¡De nada! Hasta la próxima.", 'system-message');
+            setTimeout(() => {
+                chatWidget.classList.remove('show');
+                chatbotToggleBtn.classList.remove('active');
+            }, 1500); // Espera 1.5 segundos antes de cerrar
+        };
+        
+        // Modificado: Lógica para abrir/cerrar y limpiar la memoria
         chatbotToggleBtn.addEventListener('click', () => {
-            // ESTA ES LA LÍNEA CORREGIDA: 'open' se cambió por 'show'
-            chatWidget.classList.toggle('show'); 
+            const isOpening = !chatWidget.classList.contains('show');
+            chatWidget.classList.toggle('show');
             chatbotToggleBtn.classList.toggle('active');
+            
+            // Si se está abriendo, reseteamos la conversación (vaciar memoria)
+            if (isOpening) {
+                chatMessages.innerHTML = initialSystemMessage;
+                chatInput.focus();
+            }
         });
 
-        // El resto del código del chatbot permanece igual
+        // Novedad: Función auxiliar para añadir mensajes
+        const appendMessage = (text, className) => {
+            chatMessages.innerHTML += `<div class="message ${className}">${text}</div>`;
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        };
+
         const sendMessage = async () => {
             const userText = chatInput.value.trim();
             if (userText === '') return;
 
-            // ... (el resto de la función sendMessage no necesita cambios)
-            chatMessages.innerHTML += `<div class="message user-message">${userText}</div>`;
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+            appendMessage(userText, 'user-message');
             chatInput.value = '';
+
+            // Novedad: Comprobar si el usuario quiere terminar la conversación
+            const closingWords = ['no', 'no gracias', 'eso es todo', 'nada más', 'listo', 'ya está'];
+            if (closingWords.includes(userText.toLowerCase())) {
+                closeChat();
+                return; // Detiene la ejecución para no llamar a la API
+            }
+
             chatInput.disabled = true;
             chatSendBtn.disabled = true;
 
@@ -83,17 +111,25 @@ document.addEventListener('DOMContentLoaded', () => {
             chatMessages.scrollTop = chatMessages.scrollHeight;
 
             try {
-               const response = await fetch('https://biocorvusbackend.onrender.com', { 
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                // El body ahora espera 'user_message', no 'message'
-                body: JSON.stringify({ user_message: userText }), 
-            });
+                // ❗ IMPORTANTE: Pega aquí la URL de tu backend en Render ❗
+                const apiUrl = 'https://biocorvusbackend.onrender.com/chat'; 
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_message: userText }),
+                });
+
                 if (!response.ok) throw new Error(`API error: ${response.status}`);
+
                 const data = await response.json();
-                thinkingMessage.innerText = data.reply || "No he podido generar una respuesta.";
+                thinkingMessage.innerText = data.response || "No he podido generar una respuesta.";
+
+                // Novedad: Preguntar si puede ayudar en algo más
+                setTimeout(() => {
+                    appendMessage("¿Puedo ayudarte en algo más?", 'system-message');
+                }, 1000); // Pregunta después de 1 segundo
+
             } catch (error) {
                 thinkingMessage.innerText = 'Error de conexión. Por favor, inténtalo de nuevo más tarde.';
                 console.error('Chatbot error:', error);
@@ -101,7 +137,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 chatInput.disabled = false;
                 chatSendBtn.disabled = false;
                 chatInput.focus();
-                chatMessages.scrollTop = chatMessages.scrollHeight;
             }
         };
 
