@@ -47,57 +47,67 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     });
-});
 
+    // --- CHATBOT WIDGET INITIALIZATION ---
+  const chatbotContainer = document.getElementById('chatbot-container');
+    if (chatbotContainer) {
+        const chatbotToggleBtn = document.getElementById('chatbot-toggle-btn');
+        const chatWidget = document.getElementById('chat-widget');
+        const chatInput = document.getElementById('chat-input');
+        const chatSendBtn = document.getElementById('chat-send-btn');
+        const chatMessages = document.getElementById('chat-messages');
 
-// --- LÓGICA DEL CHATBOT ---
-const sendMessage = async () => {
-    const userText = chatInput.value.trim();
-    if (userText === '') return;
+        // Lógica para abrir y cerrar el widget
+        chatbotToggleBtn.addEventListener('click', () => {
+            // ESTA ES LA LÍNEA CORREGIDA: 'open' se cambió por 'show'
+            chatWidget.classList.toggle('show'); 
+            chatbotToggleBtn.classList.toggle('active');
+        });
 
-    // 1. Mostrar mensaje del usuario
-    chatMessages.innerHTML += `<div class="message user-message">${userText}</div>`;
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-    chatInput.value = '';
-    chatInput.disabled = true;
-    chatSendBtn.disabled = true;
+        // El resto del código del chatbot permanece igual
+        const sendMessage = async () => {
+            const userText = chatInput.value.trim();
+            if (userText === '') return;
 
-    // 2. Mostrar un indicador de "pensando"
-    const thinkingMessage = document.createElement('div');
-    thinkingMessage.className = 'message system-message';
-    thinkingMessage.innerText = 'BioCorvus está pensando...';
-    chatMessages.appendChild(thinkingMessage);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+            // ... (el resto de la función sendMessage no necesita cambios)
+            chatMessages.innerHTML += `<div class="message user-message">${userText}</div>`;
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            chatInput.value = '';
+            chatInput.disabled = true;
+            chatSendBtn.disabled = true;
 
-  try {
-    // ¡IMPORTANTE! Reemplaza esta URL con la URL de tu proyecto en Vercel
-    // cuando lo despliegues. Para probar en local, sería 'http://localhost:3001/api/chat'.
-    const response = await fetch('/api/chat', { // <-- CAMBIA ESTO
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ message: userText }),
-    });
+            const thinkingMessage = document.createElement('div');
+            thinkingMessage.className = 'message system-message';
+            thinkingMessage.innerText = 'BioCorvus está pensando...';
+            chatMessages.appendChild(thinkingMessage);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
 
-    const data = await response.json();
-    
-    // Reemplazar el "pensando" con la respuesta real
-    thinkingMessage.innerText = data.reply;
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: userText }),
+                });
+                if (!response.ok) throw new Error(`API error: ${response.status}`);
+                const data = await response.json();
+                thinkingMessage.innerText = data.reply || "No he podido generar una respuesta.";
+            } catch (error) {
+                thinkingMessage.innerText = 'Error de conexión. Por favor, inténtalo de nuevo más tarde.';
+                console.error('Chatbot error:', error);
+            } finally {
+                chatInput.disabled = false;
+                chatSendBtn.disabled = false;
+                chatInput.focus();
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        };
 
-} catch (error) {
-        thinkingMessage.innerText = 'Error de conexión. Por favor, inténtalo de nuevo más tarde.';
-        console.error('Chatbot error:', error);
-    } finally {
-        chatInput.disabled = false;
-        chatSendBtn.disabled = false;
-        chatInput.focus();
-        chatMessages.scrollTop = chatMessages.scrollHeight;
+        chatSendBtn.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
     }
-};
-
-// Y actualiza los event listeners
-chatSendBtn.addEventListener('click', sendMessage);
-chatInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') sendMessage();
 });
