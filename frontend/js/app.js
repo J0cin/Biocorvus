@@ -112,14 +112,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try {
                 // ❗ IMPORTANTE: Pega aquí la URL de tu backend en Render ❗
-                const apiUrl = 'https://biocorvusbackend.onrender.com/chat'; 
-                
+                const apiUrl = '/api/Chatbot'; 
+
                 const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ user_message: userText }),
                 });
-
                 if (!response.ok) throw new Error(`API error: ${response.status}`);
 
                 const data = await response.json();

@@ -1,12 +1,12 @@
 {
-  "name": "frontend",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
+  "version": 2,
+  "builds": [
+    {
+      "src": "backend/Chatbot.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    { "src": "/backend/chat", "dest": "backend/chat.py" }
+  ]
 }
