@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
             chatMessages.scrollTop = chatMessages.scrollHeight;
 
             try {
-               const response = await fetch('https://biocorvus.onrender.com', { 
+               const response = await fetch('https://biocorvusbackend.onrender.com', { 
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -27,7 +27,7 @@ app.add_middleware(
 )
 # ------------------------
 # Modelo de embeddings
-embedder = SentenceTransformer("all-MiniLM-L6-v2")
+embedder = SentenceTransformer("paraphrase-MiniLM-L3-v2")
 
 # Base de conocimiento (ejemplo simple, luego puedes meter PDFs)
 docs = [
