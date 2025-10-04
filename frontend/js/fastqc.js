@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
         resetUI();
 
         statusContainer.classList.remove('hidden');
-        loader.classList.remove('hidden'); // Asegúrate de que el loader se muestre
+        loader.classList.remove('hidden'); 
         statusMessage.textContent = 'Reading file(s)...';
 
         const isComparison = comparisonToggle.checked;
@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- 4. FUNCIONES DE AYUDA Y RENDERIZADO (Sin cambios) ---
+    // --- 4. FUNCIONES DE AYUDA Y RENDERIZADO  ---
 
     function readFileAsText(file) {
         return new Promise((resolve, reject) => {
@@ -180,7 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function resetUI() {
         if (analysisWorker) {
-            analysisWorker.terminate(); // Detener el worker si se inicia un nuevo análisis
+            analysisWorker.terminate(); // 
             analysisWorker = null;
         }
         statusContainer.classList.add('hidden');
@@ -192,7 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- 5. FUNCIONES DE RENDERIZADO (Sin cambios) ---
+    // --- 5. FUNCIONES DE RENDERIZADO  ---
     function displayResults(results) {
         resultsSection.classList.remove('hidden');
         summaryWrapper.innerHTML = '';

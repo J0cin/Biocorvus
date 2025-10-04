@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- LÓGICA DE UI ---
     function toggleSidebar() {
-        // legacy toggle (keeps existing behavior when no checkbox input is present)
+        // legacy toggle
         if (!appLayout) return;
         appLayout.classList.toggle('sidebar-collapsed');
         if (sidebarToggleBtn) sidebarToggleBtn.classList.toggle('is-active');
@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- LÓGICA ASÍNCRONA DE LA HERRAMIENTA ---
 
     // Parsea el contenido de un archivo FASTQ en un array de objetos.
-    //  * Equivalente a FastqGeneralIterator de BioPython.
+    //  Cada objeto tiene {title, seq, qual}.
     //  * @param {string} textContent - El contenido completo del archivo FASTQ.
     //  * @returns {Array<Object>} Un array de lecturas, donde cada una es {title, seq, qual}.
     //  */
@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /**
      * Recorta una lectura usando una ventana deslizante de calidad.
-     * Equivalente a la función `sliding_window_trim` en worker.py.
+     
      * @param {string} seq - La secuencia de ADN.
      * @param {string} qual - La cadena de calidad Phred.
      * @param {number} qualityThreshold - El umbral de calidad promedio de la ventana.
@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /**
      * Comprueba si una secuencia es de baja complejidad.
-     * Equivalente a `is_low_complexity` en worker.py.
+     *
      * @param {string} seq - La secuencia a comprobar.
      * @param {number} threshold - El umbral de frecuencia para el nucleótido más común.
      * @returns {boolean} - True si es de baja complejidad.
@@ -118,7 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     /**
      * El núcleo del proceso de limpieza. Itera sobre las lecturas y aplica los filtros.
-     * Reemplaza toda la lógica del bucle principal en `process_cleaner_job`.
+     * 
      * @param {Array<Object>} reads - El array de lecturas parseadas.
      * @param {Object} params - Los parámetros del formulario.
      * @returns {Object} - Un objeto con las estadísticas y las lecturas limpias.
@@ -144,7 +144,7 @@ document.addEventListener('DOMContentLoaded', () => {
             let { title, seq, qual } = read;
             let discard = false;
 
-            // 1. Deduplicación (si está activado)
+            // 1. Deduplicación 
             if (params.deduplicate) {
                 if (seenSequences.has(seq)) {
                     stats.discard_reasons.duplicate.count++;
@@ -160,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 qual = qual.substring(0, pos);
             }
 
-            // 3. Recorte por calidad (ventana deslizante)
+            // 3. Recorte por calidad 
             const trimmed = slidingWindowTrim(seq, qual, params.quality_threshold);
             seq = trimmed.seq;
             qual = trimmed.qual;
@@ -203,7 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    // --- LÓGICA ASÍNCRONA (AHORA 100% LOCAL) ---
+    // --- LÓGICA ASÍNCRONA  ---
 
     async function handleFormSubmit(event) {
         event.preventDefault();
@@ -274,7 +274,7 @@ document.addEventListener('DOMContentLoaded', () => {
         reader.readAsText(file);
     }
 
-    // --- FUNCIONES DE RESULTADOS (sin cambios, ya es compatible) ---
+    // --- FUNCIONES DE RESULTADOS  ---
     function renderResults(results) {
         if (!results || !results.summary) {
             scResultsSection.innerHTML = '<h3>Error</h3><p>Could not retrieve valid results.</p>';
@@ -345,7 +345,7 @@ document.addEventListener('DOMContentLoaded', () => {
         cleanedFastqContent = "";
     }
 
-    // --- INICIALIZACIÓN (simplificada) ---
+    // --- INICIALIZACIÓN  ---
     function init() {
         const savedTheme = localStorage.getItem('theme') || 'dark';
         applyTheme(savedTheme);

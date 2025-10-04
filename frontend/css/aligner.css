@@ -89,7 +89,7 @@
     padding: 20px;
     border-radius: var(--border-radius-small);
     border: 1px solid var(--color-border);
-    white-space: pre-wrap; /* Mejora para que las líneas largas se ajusten si es necesario */
+    white-space: pre-wrap; 
     overflow-x: auto;
     font-family: 'Courier New', Courier, monospace;
     font-size: 14px;
@@ -118,7 +118,7 @@
 }
 
 
-/* --- Loader Animado (si es único de esta página) --- */
+/* --- Loader Animado --- */
 .loader-wrapper { display: flex; align-items: center; gap: 20px; margin-top: 15px; }
 .loader { width: 48px; height: 48px; display: flex; flex-wrap: wrap; gap: 4px; transform-style: preserve-3d; transform: rotateX(45deg) rotate(45deg); }
 .loader .box { --color: var(--color-primary); width: 10px; height: 10px; background: var(--color); position: relative; animation: fall 1s infinite linear; }
@@ -152,7 +152,6 @@
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    /* ESTE ES EL CAMBIO: de color sólido a gradiente */
     background: linear-gradient(135deg, #5A88FF 0%, #AA78FF 100%);
     border: none;
     cursor: pointer;
@@ -168,7 +167,6 @@
 #chatbot-toggle-btn svg {
     width: 30px;
     height: 30px;
-    /* ESTE ES EL CAMBIO: El icono ahora es blanco para contrastar */
     fill: #FFFFFF;
     transition: transform 0.3s ease, opacity 0.3s ease;
     position: absolute;
@@ -298,7 +296,7 @@
     align-items: stretch;
     padding: 15px;
     gap: 10px;
-    background-color: var(--color-background); /* Fondo consistente */
+    background-color: var(--color-background); 
 }
 
 .option-btn {

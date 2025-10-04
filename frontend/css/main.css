@@ -11,9 +11,10 @@
     --border-radius-small: 8px;
 
     /* -- Variables para componentes específicos -- */
-    --bar-width: 24px;
-    --bar-height: 3px;
-    --hamburger-gap: 5px;
+    /* ===== AJUSTE DE TAMAÑO PARA LA HAMBURGUESA/X ===== */
+    --bar-width: 28px; /* Aumentado de 24px */
+    --bar-height: 4px; /* Aumentado de 3px */
+    --hamburger-gap: 6px; /* Ajustado para el nuevo tamaño */
     --animation-timing: 200ms ease-in-out;
 }
 
@@ -40,7 +41,7 @@
     --color-surface: #FFFFFF;
     --color-primary: #19183B;
     --color-text-primary: #4776E6;
-    --color-text-secondary: #708993;
+    --color-text-secondary: #000;
     --color-border: #A1C2BD;
     --color-button-border: #4776E6;
     --color-button-hover-bg: #19183B;
@@ -96,6 +97,7 @@ h1, h2, h3 {
     margin-left: -280px;
 }
 
+
 .sidebar-header { margin-bottom: 40px; }
 .sidebar-header h3 { margin: 0; }
 .sidebar-nav { display: flex; flex-direction: column; gap: 15px; }
@@ -107,9 +109,21 @@ h1, h2, h3 {
     font-weight: 200;
     transition: all 0.2s ease-in-out;
 }
-.nav-link:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    color: var(--color-text-primary);
+.nav-link.quality-inspector:hover {
+    background: linear-gradient(315deg, #8e2de2, #4a00e0);
+    color: var(--color-text-secondary);
+    transform: translateX(5px);
+}
+
+.nav-link.sequence-cleaner:hover {
+    background: linear-gradient(315deg, #03a9f4, #8e2de2);;
+    color: var(--color-text-secondary);
+    transform: translateX(5px);
+}
+
+.nav-link.sequence-aligner:hover {
+    background: linear-gradient(315deg, #00c6ff, #0072ff);
+    color: var(--color-text-secondary);
     transform: translateX(5px);
 }
 .nav-link.active {
@@ -207,39 +221,55 @@ h1, h2, h3 {
     margin: 0 auto;
 }
 
-/* --- Botón Hamburguesa --- */
-.hamburger-menu {
+/* =====  HAMBURGUESA/X ===== */
+#app-header .hamburger-menu {
     display: flex;
     flex-direction: column;
     gap: var(--hamburger-gap);
-    width: max-content;
+    width: var(--bar-width);
+    height: calc(var(--bar-height) * 3 + var(--hamburger-gap) * 2); /* Altura total calculada */
+    box-sizing: content-box;
+    justify-content: space-between;
     z-index: 2;
     cursor: pointer;
 }
-.hamburger-menu input { display: none; }
-.hamburger-menu::before, .hamburger-menu::after, .hamburger-menu input::before {
+
+/* Ocultamos el checkbox real */
+#app-header .hamburger-menu input {
+    display: none;
+}
+
+/* Creamos las 3 barras usando pseudo-elementos */
+#app-header .hamburger-menu::before,
+#app-header .hamburger-menu::after,
+#app-header .hamburger-menu span {
     content: "";
     width: var(--bar-width);
     height: var(--bar-height);
     background-color: var(--hamburger-bar-color);
     border-radius: 999px;
-    transform-origin: left center;
-    transition: opacity var(--animation-timing), width var(--animation-timing), transform var(--animation-timing);
-}
-.hamburger-menu.is-active input::before { opacity: 0; width: 0; }
-.hamburger-menu.is-active::before {
-    --hamburger-height: calc(2 * var(--bar-height) + var(--hamburger-gap));
-    --x-width: calc(var(--hamburger-height) * 1.41421356);
-    transform: rotate(45deg) translate(0, calc(var(--bar-height) / -2));
-    width: var(--x-width);
-}
-.hamburger-menu.is-active::after {
-    --hamburger-height: calc(2 * var(--bar-height) + var(--hamburger-gap));
-    --x-width: calc(var(--hamburger-height) * 1.41421356);
-    transform: rotate(-45deg) translate(0, calc(var(--bar-height) / 2));
-    width: var(--x-width);
+    transform-origin: center center; /* Origen de la rotación en el centro */
+    transition: transform var(--animation-timing), opacity var(--animation-timing);
 }
 
+
+
+#app-header .hamburger-menu span {
+    transition: opacity var(--animation-timing);
+}
+
+/* Estado activo (cuando el input está :checked) */
+#app-header .hamburger-menu:has(input:checked)::before {
+    transform: translateY(calc(var(--bar-height) + var(--hamburger-gap))) rotate(45deg);
+}
+
+#app-header .hamburger-menu:has(input:checked) span {
+    opacity: 0; /* La barra del medio desaparece */
+}
+
+#app-header .hamburger-menu:has(input:checked)::after {
+    transform: translateY(calc(-1 * (var(--bar-height) + var(--hamburger-gap)))) rotate(-45deg);
+}
 
 /* --- Interruptor de Tema --- */
 .theme-toggle {
@@ -269,8 +299,12 @@ h1, h2, h3 {
     border-radius: var(--border-radius-small); transition: all 0.3s ease;
     display: flex; justify-content: center; align-items: center; overflow: hidden;
 }
-.button:hover .button_inner {
-    background: var(--color-button-hover-bg);
+.button:hover .button_inner.sequence-cleaner {
+    background: linear-gradient(315deg, #03a9f4, #8e2de2);
+    color: var(--color-button-hover-text);
+}
+.button:hover .button_inner.quality-inspector {
+    background: linear-gradient(315deg, #8e2de2, #4a00e0);
     color: var(--color-button-hover-text);
 }
 .button_inner .t { transition: transform 0.4s cubic-bezier(0.7, 0, 0.2, 1); }
@@ -305,8 +339,18 @@ h1, h2, h3 {
     transition: all 0.2s ease;
     font-weight: 200;
 }
-.file-input-wrapper .custom-file-upload:hover {
-    background-color: var(--color-primary);
+.file-input-wrapper .custom-file-upload.quality-inspector:hover {
+    background: linear-gradient(315deg, #8e2de2, #4a00e0);
+    color: var(--color-button-hover-text);
+    border-color: var(--color-primary);
+}
+.file-input-wrapper .custom-file-upload.sequence-cleaner:hover {
+    background: linear-gradient(315deg, #03a9f4, #8e2de2);
+    color: var(--color-button-hover-text);
+    border-color: var(--color-primary);
+}
+.file-input-wrapper .custom-file-upload.sequence-aligner:hover {
+    background: linear-gradient(315deg, #00c6ff, #0072ff);
     color: var(--color-button-hover-text);
     border-color: var(--color-primary);
 }
@@ -331,3 +375,135 @@ hr.separator {
 }
 
 
+/* ===== ESTILO GLASSMORPHISM PARA TÍTULOS DE HERRAMIENTAS ===== */
+/* ================================================================== */
+
+/* 1. CONTENEDOR PRINCIPAL DEL TÍTULO (.title-section)
+--------------------------------------------------------------------- */
+.title-section {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 6rem 2rem; /* Más espacio vertical */
+    margin-bottom: 2rem; /* Espacio antes de la siguiente sección */
+    overflow: hidden; /* Esencial para que el brillo no se salga */
+    transition: 0.5s;
+}
+
+/* 2. EL BRILLO DE FONDO (Estado por defecto = Visible)
+--------------------------------------------------------------------- */
+.title-section::before,
+.title-section::after {
+    content: ' ';
+    position: absolute;
+    top: 0;
+    left: 20px; /* Posición inicial visible */
+    width: calc(100% - 40px); /* Ancho inicial visible */
+    height: 100%;
+    border-radius: 8px;
+    transform: skewX(0deg); /* Sin inclinación inicial */
+    transition: 0.5s;
+}
+
+.title-section::after {
+    filter: blur(30px); /* El brillo suave */
+}
+
+/* --- Asignación de colores heredados del index --- */
+.title-section.quality-inspector::before,
+.title-section.quality-inspector::after {
+    background: linear-gradient(315deg, #8e2de2, #4a00e0); /* Púrpura */
+}
+.title-section.sequence-cleaner::before,
+.title-section.sequence-cleaner::after {
+    background: linear-gradient(315deg, #03a9f4, #8e2de2); /* Azul */
+}
+.title-section.sequence-aligner::before,
+.title-section.sequence-aligner::after {
+    background: linear-gradient(315deg, #00c6ff, #0072ff); /* Cian */
+}
+/* Añade aquí más clases si tienes más herramientas */
+
+
+/* 3. EL CONTENIDO DE CRISTAL (Estado por defecto = Elevado)
+--------------------------------------------------------------------- */
+.title-section .content {
+    position: relative;
+    text-align: center;
+    padding: 2rem;
+    background: rgba(25, 24, 59, 0.15);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4); /* Sombra elevada */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    z-index: 1;
+    transition: 0.5s;
+    color: var(--color-text-primary);
+    transform: translateY(-20px); /* Elevado por defecto */
+}
+.title-section .content h1 {
+    font-size: 2.5em;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 1rem;
+}
+.title-section .content p {
+    font-size: 1em;
+    font-weight: 200;
+    color: var(--color-text-secondary);
+    max-width: 600px; /* Limita el ancho del texto */
+    margin: 0 auto;
+}
+
+/* 4. LOS REFLEJOS FLOTANTES (Estado por defecto = Visibles)
+--------------------------------------------------------------------- */
+.title-section span {
+    display: block;
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.title-section span::before,
+.title-section span::after {
+    content: '';
+    position: absolute;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    animation: animate 4s ease-in-out infinite;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    transition: 0.5s;
+    opacity: 1; /* Visibles por defecto */
+}
+.title-section span::before {
+    top: -50px; left: 50px;
+    width: 100px; height: 100px;
+}
+.title-section span::after {
+    bottom: -50px; right: 50px;
+    width: 100px; height: 100px;
+    animation-delay: -2s;
+}
+
+
+/* 5. HOVER 
+--------------------------------------------------------------------- */
+.title-section:hover::before,
+.title-section:hover::after {
+    transform: skewX(15deg); /* Se inclina */
+    left: 50px;
+    width: 20%; /* Se encoge */
+}
+
+.title-section:hover .content {
+    transform: translateY(0); /* Vuelve a su posición base */
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); /* Sombra normal */
+}
+
+.title-section:hover span::before,
+.title-section:hover span::after {
+    opacity: 0; /* Los reflejos desaparecen */
+}

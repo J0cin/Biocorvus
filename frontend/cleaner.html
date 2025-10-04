@@ -17,9 +17,9 @@
         <aside id="app-sidebar">
             <div class="sidebar-header"><h3>Tools</h3></div>
             <nav class="sidebar-nav">
-                <a href="Fastqc.html" class="nav-link">Quality Inspector</a>
-                <a href="cleaner.html" class="nav-link active">Sequence Cleaner</a>
-                <a href="aligner.html" class="nav-link">Sequence Aligner</a>
+                <a href="Fastqc.html" class="nav-link quality-inspector">Quality Inspector</a>
+                <a href="cleaner.html" class="nav-link active sequence-cleaner">Sequence Cleaner</a>
+                <a href="aligner.html" class="nav-link sequence-aligner">Sequence Aligner</a>
                 <a href="index.html" class="nav-link">Main</a>
             </nav>
         </aside>
@@ -27,6 +27,7 @@
         <div id="main-content-wrapper">
             <header id="app-header">
                 <label id="sidebar-toggle-btn" class="hamburger-menu is-active" for="sidebar-toggle-input" aria-label="Toggle sidebar">
+                    <span></span>
                     <input type="checkbox" id="sidebar-toggle-input" />
                 </label>
                 <div class="header-controls">
@@ -40,9 +41,12 @@
             </header>
 
             <main id="app-content">
-                <section class="title-section">
-                    <h1>Sequence Cleaner</h1>
-                    <p class="description">Trim, filter, and clean your FASTQ files with a comprehensive set of tools.</p>
+                <section class="title-section sequence-cleaner">
+                    <span></span>
+                    <div class="content">
+                        <h1>Sequence Cleaner</h1>
+                        <p class="description">Trim, filter, and clean your FASTQ files with a comprehensive set of tools.</p>
+                    </div>
                 </section>
 
 
@@ -73,7 +77,7 @@
                     <div class="file-input-wrapper">
                         <label for="sc-fastq-file">FASTQ File to Clean:</label>
                         <!-- El 'name' aquí ya estaba bien -->
-                        <label for="sc-fastq-file" class="custom-file-upload">File</label>
+                        <label for="sc-fastq-file" class="custom-file-upload sequence-cleaner">File</label>
                         <input type="file" id="sc-fastq-file" name="file" class="fastq-file-input" accept=".fastq,.fq,.fastq.gz,.fq.gz" required>
                         <span class="file-name-display">No file selected</span>
                     </div>
@@ -120,7 +124,7 @@
                     <div class="controls-wrapper">
                         <div class="submit-wrapper">
                             <button type="submit" class="button" id="sc-clean-button">
-                                <div class="button_inner">
+                                <div class="button_inner sequence-cleaner">
                                     <img src="assets/icons/right.png" alt="arrow" class="button_arrow"/>
                                     <span class="t">Clean Sequence</span>
                                 </div>
@@ -150,7 +154,7 @@
         <div id="chat-widget" class="chat-widget" aria-hidden="true">
             <div class="chat-header">
                 <h3>BioCorvus Assistant</h3>
-                <p>Experto en herramientas bioinformáticas</p>
+                <p>Bioinformatic Bot</p>
             </div>
 
             <div id="chat-messages" class="chat-messages" role="log" aria-live="polite">

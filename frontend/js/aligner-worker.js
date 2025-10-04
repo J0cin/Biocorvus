@@ -2,7 +2,7 @@
 
 /**
  * Implementación del algoritmo Needleman-Wunsch.
- * Este se ejecuta en un hilo separado para no bloquear la UI.
+    * Este script se ejecuta en un Web Worker para no bloquear la interfaz de usuario.
  */
 self.onmessage = function(e) {
     const { seq1, seq2, matchScore, mismatchPenalty, gapPenalty } = e.data;

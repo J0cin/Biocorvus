@@ -1,5 +1,3 @@
-/* Estilos ÚNICOS para la herramienta Sequence Cleaner */
-
 /* --- Grid de Parámetros --- */
 .parameter-grid {
     display: grid;
@@ -67,7 +65,7 @@
 }
 
 .progress-bar-passed {
-    background-color: var(--color-success);
+    background: linear-gradient(315deg, #03a9f4, #8e2de2);
 }
 
 .results-table {
@@ -100,7 +98,7 @@
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    /* ESTE ES EL CAMBIO: de color sólido a gradiente */
+    
     background: linear-gradient(135deg, #5A88FF 0%, #AA78FF 100%);
     border: none;
     cursor: pointer;
@@ -116,7 +114,6 @@
 #chatbot-toggle-btn svg {
     width: 30px;
     height: 30px;
-    /* ESTE ES EL CAMBIO: El icono ahora es blanco para contrastar */
     fill: #FFFFFF;
     transition: transform 0.3s ease, opacity 0.3s ease;
     position: absolute;

@@ -32,32 +32,38 @@ body {
 }
 
 #app-sidebar {
-    width: 280px; 
-    height: 100%; 
-    padding: 20px; 
-    box-sizing: border-box;
-    flex-shrink: 0; 
-    background: rgba(10, 10, 30, 0.8);
-    backdrop-filter: blur(10px); 
-    border-right: 1px solid var(--color-border);
-    transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
-    z-index: 1001; 
     position: fixed;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 280px;
+    background: rgba(10, 10, 30, 0.8);
+    backdrop-filter: blur(10px);
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 1001;
+    transition: transform 0.45s cubic-bezier(0.23, 1, 0.32, 1);
 }
+
+#app-sidebar .sidebar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1rem;
+}
+
 #app-layout.sidebar-collapsed #app-sidebar {
     transform: translateX(-100%);
 }
 
-/* Cuando el sidebar está abierto, empuja el contenido principal (desktop) */
 #app-layout:not(.sidebar-collapsed) #main-content-wrapper {
-    margin-left: 280px; /* ancho del sidebar */
+    margin-left: 280px;
 }
 
 #main-content-wrapper {
     flex-grow: 1; 
     height: 100vh;
     width: 100%;
-    overflow: hidden; /* El scroll lo maneja #app-content */
+    overflow: hidden;
     transition: margin-left 0.45s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
@@ -67,13 +73,21 @@ body {
     scroll-behavior: smooth; 
 }
 
-/* SOLUCIÓN: Hamburguesa siempre visible */
+/* =====  HAMBURGUESA QUE SE MUEVE ===== */
 #app-header {
     position: fixed;
     top: 25px;
     left: 25px;
-    z-index: 1002; /* El z-index más alto para estar encima de todo */
+    z-index: 1002;
+    /* Añadimos la misma transición que el sidebar para un movimiento sincronizado */
+    transition: transform 0.45s cubic-bezier(0.23, 1, 0.32, 1);
 }
+
+/*  la hamburguesa a la derecha */
+#app-layout:not(.sidebar-collapsed) #app-header {
+    transform: translateX(280px); /* El ancho exacto del sidebar */
+}
+
 .hamburger-menu { 
     display: flex; 
     flex-direction: column; 
@@ -87,9 +101,9 @@ body {
     transform-origin: left center; transition: all var(--animation-timing); 
 }
 .hamburger-menu input { appearance: none; padding: 0; margin: 0; outline: none; pointer-events: none; }
-.hamburger-menu.is-active input { opacity: 0; width: 0; }
-.hamburger-menu.is-active::before { transform: rotate(45deg) translate(2px, -3px); }
-.hamburger-menu.is-active::after { transform: rotate(-45deg) translate(2px, 3px); }
+.hamburger-menu:has(input:checked)::before { transform: rotate(45deg) translate(2px, -3px); }
+.hamburger-menu:has(input:checked)::after { transform: rotate(-45deg) translate(2px, 3px); }
+.hamburger-menu:has(input:checked) input { opacity: 0; width: 0; }
 
 
 /* --- MENÚ LATERAL --- */
@@ -121,7 +135,7 @@ body {
     color: var(--color-text-primary);
 }
 
-/* --- ESCENA DE FONDO FIJA --- */
+/* ---  FONDO FIJA --- */
 #hero-background {
     position: fixed; 
     top: 0; 
@@ -132,7 +146,6 @@ body {
     pointer-events: none;
 }
 
-/* SOLUCIÓN: Estrellas visibles con su propio z-index */
 .stars {
     position: absolute; top: 0; left: 0; width: 1px; height: 1px;
     background: white;
@@ -141,7 +154,6 @@ body {
     z-index: 2;
 }
 
-/* MEJORA: Luna circular completa y centrada */
 .moon {
     position: absolute;
     top: 50%;
@@ -151,7 +163,7 @@ body {
     background-color: #f0f0f0;
     border-radius: 50%;
     box-shadow: 0 0 60px 10px #ffffff, 0 0 100px 20px rgba(255, 255, 255, 0.7), inset -40px -20px 80px rgba(0, 0, 0, 0.2);
-    transform: translate(-50%, -50%); /* Centrado perfecto */
+    transform: translate(-50%, -50%);
     transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.8s ease-out;
     z-index: 3;
 }
@@ -168,7 +180,7 @@ body {
     transition: transform 1.5s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-/* --- CONTENIDO QUE SE DESPLAZA --- */
+
 #hero {
     height: 100vh; 
     display: flex; 
@@ -177,23 +189,46 @@ body {
     position: relative; 
     z-index: 5;
 }
+
+/* ===== TÍTULO FIJO ===== */
 #main-title {
     font-size: clamp(3rem, 10vw, 8rem); 
     color: #FFFFFF; 
     font-weight: 700;
     text-shadow: 0 0 15px rgba(0, 0, 0, 0.8), 0 0 25px rgba(0, 0, 0, 0.6);
-    transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.8s ease;
+    
+    /* Lo fijamos al centro de la pantalla */
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 5;
+    
+    /* La transición ahora será manejada por JavaScript para el efecto de scroll */
+    transition: opacity 0.5s ease-out, transform 0.5s ease-out;
 }
 
-/* SOLUCIÓN: Transición de la luna a la sección de herramientas */
 #tools-section {
     min-height: 100vh; 
     padding: 150px 40px 100px;
     position: relative; 
     z-index: 5; 
     text-align: center;
-    background: transparent; /* SIN FONDO SÓLIDO */
+    background: transparent;
+    
+    /* =====  TRANSICIÓN SUAVE ===== */
+    /* La sección de herramientas empieza ligeramente más abajo y transparente */
+    transform: translateY(100px);
+    opacity: 0;
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
 }
+
+/* Clase que añadirá JavaScript para hacerla visible */
+#tools-section.is-visible {
+    transform: translateY(0);
+    opacity: 1;
+}
+
 #tools-section::before {
     content: ''; 
     position: absolute; 
@@ -201,7 +236,6 @@ body {
     left: 0;
     width: 100%; 
     height: 100%;
-    /* Gradiente que oscurece la luna progresivamente */
     background: linear-gradient(to bottom, 
         rgba(25, 24, 59, 0) 0%, 
         rgba(25, 24, 59, 0.9) 40%, 
@@ -217,36 +251,172 @@ body {
     text-shadow: 0 0 10px rgba(161, 194, 189, 0.5);
 }
 
+/* ===== CORRECCIÓN URGENTE: LAYOUT DE LAS TARJETAS ===== */
 .tools-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 1.5rem;
-    max-width: 1000px;
-    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Alinea las tarjetas arriba */
+    flex-wrap: wrap; /* Permite que las tarjetas pasen a la siguiente línea */
+    max-width: 1400px; /* Aumenta el ancho máximo para más tarjetas */
+    margin: 0 auto; /* Centra el contenedor */
 }
+
 .tool-card {
-    background-color: rgba(42, 41, 88, 0.5);
-    border: 1px solid rgba(161, 194, 189, 0.3);
-    padding: 2.5rem 2rem;
-    border-radius: 16px;
-    backdrop-filter: blur(5px);
-    transition: transform 0.3s ease, border-color 0.3s ease;
-    cursor: pointer;
-    text-align: center;
+    position: relative;
+    width: 300px;
+    height: 380px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 30px;
+    transition: 0.5s;
+    text-decoration: none;
 }
-.tool-card:hover {
-    transform: translateY(-8px);
-    border-color: var(--color-primary);
+
+.tool-card::before {
+    content: ' ';
+    position: absolute;
+    top: 0;
+    left: 50px;
+    width: 50%;
+    height: 100%;
+    background: #fff;
+    border-radius: 8px;
+    transform: skewX(15deg);
+    transition: 0.5s;
 }
-.tool-card h3 {
-    font-size: 1.5rem;
-    font-weight: 400; /* Menos negrita, como en la imagen */
+
+.tool-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50px;
+    width: 50%;
+    height: 100%;
+    background: #fff;
+    border-radius: 8px;
+    transform: skewX(15deg);
+    transition: 0.5s;
+    filter: blur(30px);
+}
+
+.tool-card:nth-child(1)::before,
+.tool-card:nth-child(1)::after {
+    background: linear-gradient(315deg, #8e2de2, #4a00e0);
+}
+.tool-card:nth-child(2)::before,
+.tool-card:nth-child(2)::after {
+    background: linear-gradient(315deg, #03a9f4, #8e2de2);
+}
+.tool-card:nth-child(3)::before,
+.tool-card:nth-child(3)::after {
+    background: linear-gradient(315deg, #00c6ff, #0072ff);
+}
+.tool-card:nth-child(4)::before,
+.tool-card:nth-child(4)::after {
+    background: linear-gradient(315deg, #b22c83, #f42f8c);
+}
+
+.tool-card .content {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    padding: 20px 30px;
+    background: rgba(25, 24, 59, 0.15);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    z-index: 1;
+    transition: 0.5s;
+    color: var(--color-text-primary);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.tool-card .content h3 {
+    font-size: 1.8em;
+    color: #fff;
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+
+.tool-card .content p {
+    font-size: 1em;
+    margin-bottom: 10px;
+    line-height: 1.5em;
     color: var(--color-text-secondary);
+    font-weight: 200;
 }
 
+.tool-card span {
+    display: block;
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 2;
+    pointer-events: none;
+}
 
+.tool-card span::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 0; height: 0;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    opacity: 0;
+    transition: 0.1s;
+    animation: animate 4s ease-in-out infinite;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+}
 
-/* chatbot  */
+.tool-card span::after {
+    content: '';
+    position: absolute;
+    bottom: 0; right: 0;
+    width: 100%; height: 100%;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    opacity: 0;
+    transition: 0.5s;
+    animation: animate 4s ease-in-out infinite;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    animation-delay: -2s;
+}
+
+@keyframes animate {
+    0%, 100% { transform: translateY(10px); }
+    50% { transform: translateY(-10px); }
+}
+
+.tool-card:hover::before,
+.tool-card:hover::after {
+    transform: skewX(0deg);
+    left: 20px;
+    width: calc(100% - 40px);
+}
+
+.tool-card:hover .content {
+    transform: translateY(-20px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.tool-card:hover span::before {
+    top: -50px; left: 50px;
+    width: 100px; height: 100px;
+    opacity: 1;
+}
+
+.tool-card:hover span::after {
+    bottom: -50px; right: 50px;
+    width: 100px; height: 100px;
+    opacity: 1;
+}
+
+/* --- Chatbot Styles (sin cambios) --- */
 #chatbot-container {
     position: fixed;
     bottom: 30px;
@@ -258,7 +428,6 @@ body {
     width: 60px;
     height: 60px;
     border-radius: 50%;
-    /* ESTE ES EL CAMBIO: de color sólido a gradiente */
     background: linear-gradient(135deg, #5A88FF 0%, #AA78FF 100%);
     border: none;
     cursor: pointer;
@@ -274,7 +443,6 @@ body {
 #chatbot-toggle-btn svg {
     width: 30px;
     height: 30px;
-    /* ESTE ES EL CAMBIO: El icono ahora es blanco para contrastar */
     fill: #FFFFFF;
     transition: transform 0.3s ease, opacity 0.3s ease;
     position: absolute;
@@ -292,16 +460,15 @@ body {
     transform: rotate(0) scale(1);
 }
 
-
 #chat-widget {
     position: absolute;
-    bottom: 80px; /* (60px del botón + 20px de margen) */
+    bottom: 80px;
     right: 0;
     width: 350px;
     height: 500px;
-    background-color: var(--color-surface);
+    background-color: var(--color-surface, #1a1a2e);
     border: 1px solid var(--color-border);
-    border-radius: var(--border-radius-main);
+    border-radius: 15px;
     box-shadow: 0 10px 30px rgba(0,0,0,0.2);
     display: flex;
     flex-direction: column;
@@ -309,12 +476,12 @@ body {
     opacity: 0;
     transform: translateY(20px);
     transition: opacity 0.3s ease, transform 0.3s ease;
-    pointer-events: none; /* No se puede interactuar cuando está oculto */
+    pointer-events: none;
 }
 #chat-widget.show {
     opacity: 1;
     transform: translateY(0);
-    pointer-events: auto; /* Se puede interactuar cuando es visible */
+    pointer-events: auto;
 }
 
 .chat-header {
@@ -346,10 +513,10 @@ body {
     border-top-left-radius: 0;
 }
 .user-message {
-    background-color: var(--color-primary);
-    color: var(--color-button-hover-text);
+    background-color: var(--color-primary, #5A88FF);
+    color: var(--color-button-hover-text, #fff);
     align-self: flex-end;
-    margin-left: auto; /* Alinea a la derecha */
+    margin-left: auto;
     border-top-right-radius: 0;
 }
 
@@ -360,55 +527,20 @@ body {
     flex-shrink: 0;
     gap: 10px;
 }
-#chat-input {
-    flex-grow: 1;
-    padding: 10px;
-    border-radius: var(--border-radius-small);
-    border: 1px solid var(--color-border);
-    background-color: var(--color-background);
-    color: var(--color-text-primary);
-    font-family: var(--font-family);
-    font-size: 1em;
-}
-#chat-input:focus {
-    outline: none;
-    border-color: var(--color-primary);
-}
-#chat-send-btn {
-    width: 40px;
-    height: 40px;
-    border: none;
-    background-color: var(--color-primary);
-    color: var(--color-button-hover-text);
-    border-radius: var(--border-radius-small);
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-#chat-send-btn svg {
-    width: 20px;
-    height: 20px;
-    fill: var(--color-button-hover-text);
-}
-#chat-send-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
 #chat-options-container {
     flex-direction: column;
     align-items: stretch;
     padding: 15px;
     gap: 10px;
-    background-color: var(--color-background); /* Fondo consistente */
+    background-color: var(--color-background, #020211);
 }
 
 .option-btn {
     padding: 12px 15px;
     border: 1px solid var(--color-border);
-    background-color: var(--color-surface);
+    background-color: var(--color-surface, #1a1a2e);
     color: var(--color-text-secondary);
-    border-radius: var(--border-radius-small);
+    border-radius: 8px;
     cursor: pointer;
     text-align: left;
     transition: background-color 0.2s, color 0.2s;
@@ -420,12 +552,88 @@ body {
 .option-btn:hover {
     background-color: rgba(161, 194, 189, 0.1);
     color: var(--color-text-primary);
-    border-color: var(--color-primary);
+    border-color: var(--color-primary, #5A88FF);
 }
 
 .option-btn.back-btn {
     margin-top: 10px;
     text-align: center;
-    color: var(--color-primary);
+    color: var(--color-primary, #5A88FF);
     font-weight: bold;
+}
+
+
+.social-links-container {
+    width: 100%;
+    margin-top: 4rem; 
+    padding-bottom: 4rem;
+}
+
+.social-icons {
+    display: flex;
+    justify-content: center;
+    padding: 0;
+    margin: 0;
+}
+
+.social-icons li {
+    list-style: none;
+}
+
+.social-icons li a {
+    width: 70px; 
+    height: 70px;
+    background-color: rgba(255, 255, 255, 0.9); 
+    text-align: center;
+    line-height: 70px;
+    font-size: 30px;
+    margin: 0 15px;
+    display: block;
+    border-radius: 50%;
+    position: relative;
+    overflow: hidden;
+    border: 3px solid rgba(255, 255, 255, 0.8);
+    z-index: 1;
+    transition: transform 0.3s ease;
+}
+
+.social-icons li a:hover {
+    transform: translateY(-5px); /* Ligero efecto de elevación */
+}
+
+.social-icons li a .icon {
+    position: relative;
+    color: #19183B; 
+    transition: .5s;
+    z-index: 3;
+}
+
+.social-icons li a:hover .icon {
+    color: #fff; /* El icono se vuelve blanco al pasar el ratón */
+    transform: rotateY(360deg);
+}
+
+.social-icons li a:before {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transition: .5s;
+    z-index: 2;
+}
+
+.social-icons li a:hover:before {
+    top: 0; /* El color sube para llenar el círculo */
+}
+
+/* Color para LinkedIn */
+.social-icons li:nth-child(1) a:before {
+    background: #0077b5;
+}
+
+/* Color para GitHub */
+.social-icons li:nth-child(2) a:before {
+    background: #333;
 }

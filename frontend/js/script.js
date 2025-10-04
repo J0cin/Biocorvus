@@ -80,6 +80,39 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Aquí iría el resto del código específico de cleaner.html si fuera necesario,
-    // pero para la página de inicio (index.html), esto es todo lo que se necesita.
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const appContent = document.getElementById('app-content');
+    const mainTitle = document.getElementById('main-title');
+    const toolsSection = document.getElementById('tools-section');
+
+    if (appContent && mainTitle && toolsSection) {
+        appContent.addEventListener('scroll', () => {
+            const scrollPosition = appContent.scrollTop;
+            const viewportHeight = appContent.clientHeight;
+
+            // Definimos un punto de activación (ej. al 20% de la altura de la ventana)
+            const activationPoint = viewportHeight * 0.2;
+
+            if (scrollPosition > activationPoint) {
+                // Cuando el usuario ha hecho scroll suficiente:
+                // 1. Ocultamos el título principal
+                mainTitle.style.opacity = '0';
+                mainTitle.style.transform = 'translate(-50%, -50%) scale(0.8)'; // Encoge un poco al desaparecer
+                
+                // 2. Mostramos la sección de herramientas
+                toolsSection.classList.add('is-visible');
+
+            } else {
+                // Si el usuario vuelve hacia arriba, revertimos los cambios
+                // 1. Mostramos el título de nuevo
+                mainTitle.style.opacity = '1';
+                mainTitle.style.transform = 'translate(-50%, -50%) scale(1)';
+                
+                // 2. Ocultamos la sección de herramientas
+                toolsSection.classList.remove('is-visible');
+            }
+        });
+    }
 });

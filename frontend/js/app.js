@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- LÓGICA DE TEMA OSCURO/CLARO (Copiada de cleaner.js) ---
+    // --- LÓGICA DE TEMA OSCURO/CLARO ---
     // Use central theme manager if available
     if (themeToggleBtn) {
         themeToggleBtn.addEventListener('click', () => {
@@ -50,90 +50,88 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- CHATBOT WIDGET INITIALIZATION ---
     const chatbotContainer = document.getElementById('chatbot-container');
-    if (chatbotContainer) {
-        const chatbotToggleBtn = document.getElementById('chatbot-toggle-btn');
-        const chatWidget = document.getElementById('chat-widget');
-        const chatMessages = document.getElementById('chat-messages');
-        const chatOptionsContainer = document.getElementById('chat-options-container');
-        const initialSystemMessage = `<div class="message system-message">Hola, soy BioCorvus Assistant. ¿Sobre qué herramienta quieres saber más?</div>`;
+if (chatbotContainer) {
+    const chatbotToggleBtn = document.getElementById('chatbot-toggle-btn');
+    const chatWidget = document.getElementById('chat-widget');
+    const chatMessages = document.getElementById('chat-messages');
+    const chatOptionsContainer = document.getElementById('chat-options-container');
+    const initialSystemMessage = `<div class="message system-message">Hello, I'm BioCorvus Assistant. Which tool would you like to know more about?</div>`;
 
-        // ==================================================================
-        // AQUÍ VIVE LA INTELIGENCIA DEL CHATBOT (EL ÁRBOL DE CONVERSACIÓN)
-        // ==================================================================
-        const conversationTree = {
-                // Nivel 1: Opciones Principales
-    options: {
-        // ==========================================================
-        // ===== NUEVA SECCIÓN: SOBRE BIOCORVUS (3 NIVELES) =========
-        // ==========================================================
-        "¿Qué es BioCorvus?": {
-            // Nivel 2: Respuesta general y sub-opciones
-            answer: "BioCorvus es una plataforma web de bioinformática diseñada para ser intuitiva y accesible. Ofrece un conjunto de herramientas para realizar análisis de secuencias genómicas directamente en el navegador. ¿Qué aspecto de la plataforma te interesa más?",
-            options: {
-                "¿Cuál es su objetivo principal?": {
-                    // Nivel 3: Respuesta más específica y opciones finales
-                    answer: "El objetivo principal de BioCorvus es simplificar el pre-procesamiento y análisis de datos de secuenciación, permitiendo a los investigadores y estudiantes centrarse en los resultados sin necesidad de complejas instalaciones de software o líneas de comandos.",
-                    options: {
-                        "¿A quién está dirigido?": {
-                            answer: "Está dirigido tanto a biólogos moleculares que necesitan herramientas rápidas para sus análisis diarios, como a estudiantes de bioinformática que están aprendiendo los flujos de trabajo estándar en el campo."
-                        },
-                        "¿Qué tecnología utiliza?": {
-                            answer: "La plataforma utiliza tecnologías web modernas como HTML, CSS y JavaScript. Algunas herramientas usan WebAssembly para correr eficientemente en el navegador, y el chatbot se integra con APIs de modelos de lenguaje avanzados."
+    // ==================================================================
+    // HERE LIVES THE CHATBOT'S BRAIN (THE CONVERSATION TREE)
+    // ==================================================================
+    const conversationTree = {
+            // Level 1: Main Options
+        options: {
+            // ==========================================================
+            // ===== NEW SECTION: ABOUT BIOCORVUS (3 LEVELS) ==========
+            // ==========================================================
+            "What is BioCorvus?": {
+                // Level 2: General answer and sub-options
+                answer: "BioCorvus is a bioinformatics web platform designed to be intuitive and accessible. It offers a suite of tools to perform genomic sequence analysis directly in the browser. What aspect of the platform are you most interested in?",
+                options: {
+                    "What is its main goal?": {
+                        // Level 3: More specific answer and final options
+                        answer: "The main goal of BioCorvus is to simplify the pre-processing and analysis of sequencing data, allowing researchers and students to focus on the results without the need for complex software installations or command lines.",
+                        options: {
+                            "Who is it for?": {
+                                answer: "It is aimed at both molecular biologists who need quick tools for their daily analyses, and bioinformatics students who are learning the standard workflows in the field."
+                            },
+                        }
+                    },
+                    "What does the name 'BioCorvus' mean?": {
+                        // Level 3: More specific answer and final options
+                        answer: "The name is a combination of 'Bio' (biology/bioinformatics) and 'Corvus' (the genus for crows). Crows are known for their intelligence and ability to use tools, which symbolizes the platform's vision: smart tools for science.",
+                        options: {
+                            "Is it related to research?": {
+                               answer: "Yes, the concept is inspired by how crows solve complex problems, a perfect metaphor for the challenge of analyzing genomic data in scientific research."
+                            }
                         }
                     }
-                },
-                "¿Qué significa el nombre 'BioCorvus'?": {
-                    // Nivel 3: Respuesta más específica y opciones finales
-                    answer: "El nombre es una combinación de 'Bio' (biología/bioinformática) y 'Corvus' (el género de los cuervos). Los cuervos son conocidos por su inteligencia y su habilidad para usar herramientas, lo que simboliza la visión de la plataforma: herramientas inteligentes para la ciencia.",
-                    options: {
-                        "¿Tiene relación con la investigación?": {
-                           answer: "Sí, el concepto se inspira en cómo los cuervos resuelven problemas complejos, una metáfora perfecta para el desafío que supone el análisis de datos genómicos en la investigación científica."
-                        }
+                }
+            },
+            // ==========================================================
+            // ===== EXISTING SECTIONS  =====================
+            // ==========================================================
+            "About Quality Inspector": {
+                answer: "Excellent choice. What would you like to know about Quality Inspector?",
+                options: {
+                    "What is it for?": {
+                        answer: "Quality Inspector analyzes the quality of FASTQ files. It generates visual reports to help you decide if your raw data is of good quality before proceeding with the analysis."
+                    },
+                    "How do I use it?": {
+                        answer: "It's very simple. You just upload your file in FASTQ or FASTQ.gz format, and the tool automatically generates an HTML report with all the quality metrics."
+                    },
+                    "What metrics does it analyze?": {
+                        answer: "It analyzes key metrics such as per-base quality scores, GC content, the presence of overrepresented sequences, and sequence duplication levels."
                     }
                 }
-            }
-        },
-        // ==========================================================
-        // ===== SECCIONES EXISTENTES (SIN CAMBIOS) =================
-        // ==========================================================
-        "Sobre Quality Inspector": {
-            answer: "Excelente elección. ¿Qué te gustaría saber sobre Quality Inspector?",
-            options: {
-                "¿Para qué sirve?": {
-                    answer: "Quality Inspector analiza la calidad de archivos FASTQ. Genera reportes visuales para ayudarte a decidir si tus datos crudos son de buena calidad antes de continuar con el análisis."
-                },
-                "¿Cómo se utiliza?": {
-                    answer: "Es muy sencillo. Simplemente subes tu archivo en formato FASTQ o FASTQ.gz, y la herramienta genera automáticamente un reporte en HTML con todas las métricas de calidad."
-                },
-                "¿Qué métricas analiza?": {
-                    answer: "Analiza métricas clave como la calidad de las bases por ciclo, el contenido de GC, la presencia de secuencias sobre-representadas y los niveles de duplicación de secuencias."
+            },
+            "About Sequence Cleaner": {
+                answer: "Of course. Sequence Cleaner is vital for pre-processing. What detail are you interested in?",
+                options: {
+                    "Main function": {
+                        answer: "Its function is to clean raw sequencing data. This includes trimming adapters, filtering low-quality reads, and removing duplicate sequences to improve the reliability of your results."
+                    },
+                    "What is the output?": {
+                        answer: "You get a new, clean FASTQ file, ready to be used in alignments or other downstream analyses with greater confidence."
+                    }
                 }
-            }
-        },
-        "Sobre Sequence Cleaner": {
-            answer: "Claro. Sequence Cleaner es vital para el pre-procesamiento. ¿Qué detalle te interesa?",
-            options: {
-                "Función principal": {
-                    answer: "Su función es limpiar datos de secuenciación crudos. Esto incluye recortar adaptadores, filtrar lecturas de baja calidad y eliminar secuencias duplicadas para mejorar la fiabilidad de tus resultados."
-                },
-                "¿Qué obtengo como resultado?": {
-                    answer: "Obtienes un nuevo archivo FASTQ limpio, listo para ser usado en alineamientos u otros análisis posteriores con mayor confianza."
-                }
-            }
-        },
-        "Sobre Sequence Aligner": {
-            answer: "El alineador es una herramienta fundamental. ¿Qué quieres saber?",
-            options: {
-                "¿Qué hace exactamente?": {
-                    answer: "Realiza el alineamiento de secuencias de ADN o proteínas contra un genoma de referencia para identificar dónde y cómo encajan tus secuencias."
-                },
-                "¿Qué formatos de archivo genera?": {
-                    answer: "Genera archivos estándar en la industria bioinformática, como SAM o BAM, que describen detalladamente los resultados del alineamiento."
+            },
+            "About Sequence Aligner": {
+                answer: "The aligner is a fundamental tool. What do you want to know?",
+                options: {
+                    "What does it do exactly?": {
+                        answer: "It performs the alignment of DNA or protein sequences against a reference genome to identify where and how your sequences fit."
+                    },
+                    "What file formats does it generate?": {
+                        answer: "It generates industry-standard bioinformatics files, such as SAM or BAM, which describe the alignment results in detail."
+                    }
                 }
             }
         }
-    }
-};
+    };
+
 
         let currentNode = conversationTree; // Mantiene el estado actual de la conversación
 

@@ -8,17 +8,17 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Zalando+Sans+Expanded:wght@200;400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
     <div id="app-layout">
         <!-- Menú Lateral (Sidebar) -->
         <aside id="app-sidebar">
-            <div class="sidebar-header"><h3>Herramientas</h3></div>
+            <div class="sidebar-header"><h3>Tools</h3></div>
             <nav class="sidebar-nav">
                 <a href="Fastqc.html" class="nav-link">Quality Inspector</a>
                 <a href="cleaner.html" class="nav-link">Sequence Cleaner</a>
                 <a href="aligner.html" class="nav-link">Sequence aligner</a>
-                
             </nav>
         </aside>
 
@@ -31,14 +31,12 @@
                 </label>
             </header>
 
-            <!-- Contenido que se puede desplazar (scroll) -->
+            <!-- Scroll-->
             <main id="app-content">
                 <!-- Contenedor fijo para la escena de fondo -->
                 <div id="hero-background">
-                    <!-- Las estrellas ahora están dentro para asegurar su z-index -->
                     <div class="stars"></div>
                     <div class="moon"></div>
-                    <!-- Contenedor simplificado solo para el cuervo -->
                     <div id="crow-container">
                         <img src="assets/icons/fcrow.svg" alt="Silueta de un cuervo" id="crow-image">
                     </div>
@@ -55,39 +53,77 @@
                 <section id="tools-section">
                     <h2>My Tools</h2>
                     <div class="tools-grid">
-                        <a class="tool-card" href="Fastqc.html"><h3>Quality Inspector</h3></a>
-                        <a class="tool-card" href="cleaner.html"><h3>Sequence Cleaner</h3></a>
-                        <a class="tool-card" href="genome_scout.html"><h3>Genome Scout</h3></a>
-                        <a class="tool-card" href="#"><h3>Workflow Builder</h3></a>
-                    </div>
-                </section>
-            </main>
-        </div>
-    </div>
+                        <!-- Tarjeta 1: Quality Inspector -->
+                        <a class="tool-card" href="Fastqc.html">
+                            <span></span>
+                            <div class="content">
+                                <h3>Quality Inspector</h3>
+                                <p>Analiza la calidad de tus archivos de secuenciación FASTQ.</p>
+                            </div>
+                        </a>
+
+                        <!-- Tarjeta 2: Sequence Cleaner -->
+                        <a class="tool-card" href="cleaner.html">
+                            <span></span>
+                            <div class="content">
+                                <h3>Sequence Cleaner</h3>
+                                <p>Limpia y filtra tus lecturas para mejorar la calidad del análisis.</p>
+                            </div>
+                        </a>
+
+                        <!-- Tarjeta 4: Sequence Aligner -->
+                        <a class="tool-card" href="aligner.html">
+                            <span></span>
+                            <div class="content">
+                                <h3>Sequence Aligner</h3>
+                                <p>Alinea tus secuencias de ADN/ARN con precisión y rapidez.</p>
+                            </div>
+                        </a>
+                    </div> <!-- /.tools-grid -->
+
+                    <div class="social-links-container">
+                    <ul class="social-icons">
+                        <li>
+                   
+                            <a href="https://www.linkedin.com/in/boriscintaomacias-upv" target="_blank" aria-label="Mi perfil de LinkedIn">
+                                <i class="fab fa-linkedin-in icon"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://github.com/J0cin" target="_blank" aria-label="Mi perfil de GitHub">
+                                <i class="fab fa-github icon"></i>
+                            </a>
+                        </li>
+                    </ul>
+                </div> <!-- /.social-links-container -->
 
 
+                </section> <!-- /#tools-section -->
+            </main> <!-- /#app-content -->
+        </div> <!-- /#main-content-wrapper -->
+    </div> <!-- /#app-layout -->
+
+    <!-- Chatbot (mantener en todas las páginas; theme-manager afectará su aspecto) -->
     <div id="chatbot-container">
-        <!-- El botón flotante que abre el chat -->
         <button id="chatbot-toggle-btn" aria-label="Abrir chat de BioCorvus Assistant">
             <svg class="icon-open" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
             <svg class="icon-close" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         </button>
 
-        <!-- La ventana del chat (inicialmente oculta) -->
-        <div id="chat-widget">
+        <div id="chat-widget" aria-hidden="true">
             <div class="chat-header">
                 <h3>BioCorvus Assistant</h3>
-                <p>Experto en herramientas bioinformáticas</p>
+                <p>Bioinformatic Bot</p>
             </div>
             <div id="chat-messages" class="chat-messages">
-                <!-- Los mensajes aparecerán aquí -->
                 <div class="message system-message">Hola, soy BioCorvus Assistant. ¿En qué puedo ayudarte sobre Quality Inspector, Sequence Cleaner o Sequence Aligner?</div>
             </div>
             <div id="chat-options-container" class="chat-input-area">
-                <!-- Los botones se generarán aquí con JavaScript -->
+                <!-- Los botones / input se generan por js -->
             </div>
         </div>
     </div>
+
     <script src="js/theme-manager.js"></script>
     <script src="js/app.js"></script>
     <script src="js/script.js"></script>
