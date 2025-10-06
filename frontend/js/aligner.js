@@ -1,6 +1,7 @@
+// js/aligner.js
+
 document.addEventListener('DOMContentLoaded', () => {
     // --- CONSTANTES DE VALIDACIÓN ---
-    const MAX_FILE_SIZE = 50 * 1024 * 1024;
     const NEEDLEMAN_MAX_LEN = 50000;
 
     // --- SELECTORES ---
@@ -9,7 +10,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const statusMessage = document.getElementById('status-message');
     const resultsSection = document.getElementById('results-section');
     const summaryWrapper = document.getElementById('summary-results-wrapper');
-    const alignmentDisplayWrapper = document.getElementById('alignment-display-wrapper');
     const alignmentDisplay = document.getElementById('alignment-display');
     const modeUploadBtn = document.getElementById('mode-upload');
     const modePasteBtn = document.getElementById('mode-paste');
@@ -22,66 +22,167 @@ document.addEventListener('DOMContentLoaded', () => {
     const matchInput = document.getElementById('match-score');
     const mismatchInput = document.getElementById('mismatch-penalty');
     const gapInput = document.getElementById('gap-penalty');
+    const alignButton = alignerForm.querySelector('button[type="submit"]');
+    const fileName1Display = document.querySelector('#sequence-1-file + .file-name-display');
+    const fileName2Display = document.querySelector('#sequence-2-file + .file-name-display');
 
     // --- ESTADO ---
     let alignerWorker = null;
     let currentInputMode = 'upload';
-    let sequenceFileContent1 = '';
-    let sequenceFileContent2 = '';
+    // NEW: State to track validity of each file
+    let isFile1Valid = false;
+    let isFile2Valid = false;
 
-    // --- LÓGICA DE UI ---
-    function switchInputMode(mode) {
-        currentInputMode = mode;
-        console.log(`[aligner] switching input mode -> ${mode}`);
+    // ==================================================================
+    // ===== NUEVA SECCIÓN: LÓGICA DE VALIDACIÓN Y UI ===================
+    // ==================================================================
 
-        // Defensive guards
-        if (!modeUploadBtn || !modePasteBtn || !uploadContainer || !pasteContainer) {
-            console.warn('[aligner] missing UI elements for switchInputMode', { modeUploadBtn, modePasteBtn, uploadContainer, pasteContainer });
+    function updateSubmitButtonState() {
+        // Enable the button only if both files are valid or if we are in paste mode with text
+        if (currentInputMode === 'upload') {
+            alignButton.disabled = !(isFile1Valid && isFile2Valid);
+        } else { // paste mode
+            const hasText1 = seq1TextInput.value.trim().length > 0;
+            const hasText2 = seq2TextInput.value.trim().length > 0;
+            alignButton.disabled = !(hasText1 && hasText2);
+        }
+    }
+
+    async function handleFileValidation(event, sequenceNumber) {
+        const fileInput = sequenceNumber === 1 ? seq1FileInput : seq2FileInput;
+        const display = sequenceNumber === 1 ? fileName1Display : fileName2Display;
+        const file = fileInput.files[0];
+
+        if (!file) {
+            display.textContent = 'No file selected';
+            if (sequenceNumber === 1) isFile1Valid = false;
+            else isFile2Valid = false;
+            updateSubmitButtonState();
             return;
         }
 
-        // Update tab button visual state
+        display.textContent = 'Validating...';
+        display.style.color = 'var(--color-text-secondary)';
+
+        const validationResult = await FileValidator.validate(file, {
+            allowedExtensions: ['.fasta', '.fa', '.fna', '.txt'],
+            maxSizeMB: 50
+        });
+
+        if (validationResult.isValid) {
+            display.textContent = validationResult.message;
+            if (sequenceNumber === 1) isFile1Valid = true;
+            else isFile2Valid = true;
+        } else {
+            display.textContent = validationResult.message;
+            display.style.color = '#FF6B6B'; // Error color
+            fileInput.value = ''; // Clear the invalid file
+            if (sequenceNumber === 1) isFile1Valid = false;
+            else isFile2Valid = false;
+        }
+        updateSubmitButtonState();
+    }
+
+    // --- LÓGICA DE UI (MODIFICADA) ---
+    function switchInputMode(mode) {
+        currentInputMode = mode;
         modeUploadBtn.classList.toggle('active', mode === 'upload');
         modePasteBtn.classList.toggle('active', mode === 'paste');
+        uploadContainer.classList.toggle('hidden', mode !== 'upload');
+        pasteContainer.classList.toggle('hidden', mode !== 'paste');
+        
+        // Reset validation state on switch
+        isFile1Valid = false;
+        isFile2Valid = false;
+        updateSubmitButtonState();
+    }
 
-        if (mode === 'upload') {
-            // Show upload container explicitly and hide paste container
-            uploadContainer.classList.remove('hidden');
-            uploadContainer.style.display = 'grid';
-            uploadContainer.hidden = false;
-            uploadContainer.setAttribute('aria-hidden', 'false');
+    // --- LÓGICA DE PROCESAMIENTO (MODIFICADA) ---
 
-            pasteContainer.classList.add('hidden');
-            pasteContainer.style.display = 'none';
-            pasteContainer.hidden = true;
-            pasteContainer.setAttribute('aria-hidden', 'true');
+    function readFileAsText(file) {
+        return new Promise((resolve, reject) => {
+            if (!file) return resolve("");
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target.result);
+            reader.onerror = () => reject(new Error('Could not read file'));
+            reader.readAsText(file);
+        });
+    }
 
-            // Clear pasted values
-            if (seq1TextInput) seq1TextInput.value = '';
-            if (seq2TextInput) seq2TextInput.value = '';
+    async function getSequences() {
+        if (currentInputMode === 'upload') {
+            const file1 = seq1FileInput.files[0];
+            const file2 = seq2FileInput.files[0];
+            if (!file1 || !file2) throw new Error('Please select two valid sequence files.');
+            
+            const [content1, content2] = await Promise.all([
+                readFileAsText(file1),
+                readFileAsText(file2)
+            ]);
+            return { seq1: cleanSequence(content1), seq2: cleanSequence(content2) };
         } else {
-            // mode === 'paste'
-            uploadContainer.classList.add('hidden');
-            uploadContainer.style.display = 'none';
-            uploadContainer.hidden = true;
-            uploadContainer.setAttribute('aria-hidden', 'true');
-
-            pasteContainer.classList.remove('hidden');
-            pasteContainer.style.display = 'grid';
-            pasteContainer.hidden = false;
-            pasteContainer.setAttribute('aria-hidden', 'false');
-
-            // Clear file inputs and state
-            if (seq1FileInput) seq1FileInput.value = null;
-            if (seq2FileInput) seq2FileInput.value = null;
-            sequenceFileContent1 = '';
-            sequenceFileContent2 = '';
-
-            const name1 = document.querySelector('#sequence-1-file + .file-name-display');
-            const name2 = document.querySelector('#sequence-2-file + .file-name-display');
-            if (name1) name1.textContent = 'No file selected';
-            if (name2) name2.textContent = 'No file selected';
+            return { seq1: cleanSequence(seq1TextInput.value), seq2: cleanSequence(seq2TextInput.value) };
         }
+    }
+
+    function cleanSequence(rawSeq) {
+        if (!rawSeq) return '';
+        if (rawSeq.trim().startsWith('>')) {
+            return rawSeq.split('\n').slice(1).join('').replace(/\s/g, '').toUpperCase();
+        }
+        return rawSeq.replace(/\s/g, '').toUpperCase();
+    }
+
+    async function handleFormSubmit(event) {
+        event.preventDefault();
+        resetUI();
+        statusMessage.textContent = 'Reading and validating sequences...';
+        statusContainer.classList.remove('hidden');
+
+        try {
+            const { seq1, seq2 } = await getSequences();
+            if (!seq1 || !seq2) throw new Error('One or both sequences are empty.');
+
+            if (seq1.length > NEEDLEMAN_MAX_LEN || seq2.length > NEEDLEMAN_MAX_LEN) {
+                throw new Error(`Sequences too long. Max length is ${NEEDLEMAN_MAX_LEN.toLocaleString()} bp.`);
+            }
+
+            resultsSection.classList.remove('hidden');
+            
+            const params = {
+                matchScore: parseInt(matchInput.value, 10),
+                mismatchPenalty: parseInt(mismatchInput.value, 10),
+                gapPenalty: parseInt(gapInput.value, 10)
+            };
+
+            statusMessage.textContent = 'Aligning sequences in the background...';
+            
+            alignerWorker = new Worker('js/aligner-worker.js');
+            
+            alignerWorker.onmessage = (e) => {
+                statusContainer.classList.add('hidden');
+                renderResults(e.data);
+                alignerWorker.terminate();
+            };
+
+            alignerWorker.onerror = (error) => {
+                statusMessage.textContent = `An unexpected worker error occurred: ${error.message}`;
+                alignerWorker.terminate();
+            };
+
+            alignerWorker.postMessage({ seq1, seq2, ...params });
+
+        } catch (error) {
+            statusMessage.textContent = `Error: ${error.message}`;
+        }
+    }
+
+    function resetUI() {
+        if (alignerWorker) alignerWorker.terminate();
+        statusContainer.classList.add('hidden');
+        resultsSection.classList.add('hidden');
+        summaryWrapper.innerHTML = '';
+        alignmentDisplay.innerHTML = '';
     }
 
     function renderResults(results) {
@@ -106,102 +207,23 @@ document.addEventListener('DOMContentLoaded', () => {
         alignmentDisplay.innerHTML = alignmentHTML;
     }
 
-    function cleanSequence(rawSeq) {
-        if (!rawSeq) return '';
-        if (rawSeq.trim().startsWith('>')) {
-            return rawSeq.split('\n').slice(1).join('').replace(/\s/g, '').toUpperCase();
-        }
-        return rawSeq.replace(/\s/g, '').toUpperCase();
-    }
-
-    function getSequences() {
-        if (currentInputMode === 'upload') {
-            if (!sequenceFileContent1 || !sequenceFileContent2) throw new Error('Please select two sequence files.');
-            return { seq1: cleanSequence(sequenceFileContent1), seq2: cleanSequence(sequenceFileContent2) };
-        } else {
-            return { seq1: cleanSequence(seq1TextInput.value), seq2: cleanSequence(seq2TextInput.value) };
-        }
-    }
-
-    function handleFileSelect(event, sequenceNumber) {
-        const file = event.target.files[0];
-        if (!file) return;
-        if (file.size > MAX_FILE_SIZE) {
-            statusMessage.textContent = `Error: File "${file.name}" is too large.`;
-            statusContainer.classList.remove('hidden');
-            event.target.value = '';
-            return;
-        }
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            if (sequenceNumber === 1) sequenceFileContent1 = e.target.result;
-            else sequenceFileContent2 = e.target.result;
-        };
-        reader.readAsText(file);
-    }
-
-    function resetUI() {
-        if (alignerWorker) alignerWorker.terminate();
-        statusContainer.classList.add('hidden');
-        resultsSection.classList.add('hidden');
-        summaryWrapper.innerHTML = '';
-        alignmentDisplay.innerHTML = '';
-    }
-
-    // --- LÓGICA PRINCIPAL ---
-    async function handleFormSubmit(event) {
-        event.preventDefault();
-        resetUI();
-        statusMessage.textContent = 'Validating sequences...';
-        statusContainer.classList.remove('hidden');
-
-        try {
-            const { seq1, seq2 } = getSequences();
-            if (!seq1 || !seq2) throw new Error('One or both sequences are empty.');
-
-            // ===== CAMBIO CLAVE: Validación de longitud como primer paso =====
-            if (seq1.length > NEEDLEMAN_MAX_LEN || seq2.length > NEEDLEMAN_MAX_LEN) {
-                throw new Error(`Sequences are too long. Maximum length is ${NEEDLEMAN_MAX_LEN.toLocaleString()} bp.`);
-            }
-
-            resultsSection.classList.remove('hidden');
-            alignmentDisplayWrapper.classList.remove('hidden');
-            
-            const params = {
-                matchScore: parseInt(matchInput.value, 10),
-                mismatchPenalty: parseInt(mismatchInput.value, 10),
-                gapPenalty: parseInt(gapInput.value, 10)
-            };
-
-            statusMessage.textContent = 'Aligning sequences in the background...';
-            
-            // Usamos el worker simple para Needleman-Wunsch
-            alignerWorker = new Worker('js/aligner-worker.js');
-            
-            alignerWorker.onmessage = (e) => {
-                statusContainer.classList.add('hidden');
-                renderResults(e.data);
-                alignerWorker.terminate();
-            };
-
-            alignerWorker.onerror = (error) => {
-                statusMessage.textContent = `An unexpected worker error occurred: ${error.message}`;
-                alignerWorker.terminate();
-            };
-
-            alignerWorker.postMessage({ seq1, seq2, ...params });
-
-        } catch (error) {
-            statusMessage.textContent = `Error: ${error.message}`;
-        }
-    }
-
     // --- EVENT LISTENERS E INICIALIZACIÓN ---
-    alignerForm.addEventListener('submit', handleFormSubmit);
-    modeUploadBtn.addEventListener('click', () => switchInputMode('upload'));
-    modePasteBtn.addEventListener('click', () => switchInputMode('paste'));
-    seq1FileInput.addEventListener('change', (e) => handleFileSelect(e, 1));
-    seq2FileInput.addEventListener('change', (e) => handleFileSelect(e, 2));
-    
-    switchInputMode('upload');
+    function init() {
+        alignerForm.addEventListener('submit', handleFormSubmit);
+        modeUploadBtn.addEventListener('click', () => switchInputMode('upload'));
+        modePasteBtn.addEventListener('click', () => switchInputMode('paste'));
+
+        // ===== CAMBIO CLAVE: Usar el nuevo manejador de validación =====
+        seq1FileInput.addEventListener('change', (e) => handleFileValidation(e, 1));
+        seq2FileInput.addEventListener('change', (e) => handleFileValidation(e, 2));
+
+        // Add listeners for paste mode to enable/disable button
+        seq1TextInput.addEventListener('input', updateSubmitButtonState);
+        seq2TextInput.addEventListener('input', updateSubmitButtonState);
+        
+        switchInputMode('upload');
+        updateSubmitButtonState(); // Initial state
+    }
+
+    init();
 });

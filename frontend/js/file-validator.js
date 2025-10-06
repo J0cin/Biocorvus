@@ -2,17 +2,17 @@
 
 const FileValidator = {
     /**
-     * Valida un archivo del lado del cliente basándose en extensión, tamaño y contenido
-     * @param {File} file - El objeto File del input
-     * @param {object} options - Opciones de configuración
-     * @param {string[]} options.allowedExtensions - Array de extensiones permitidas 
-     * @param {number} options.maxSizeMB - Tamaño máximo del archivo en Megabytes
+     * Valida un archivo del lado del cliente basándose en extensión, tamaño y contenido ("magic numbers").
+     * @param {File} file - El objeto File del input.
+     * @param {object} options - Opciones de configuración.
+     * @param {string[]} options.allowedExtensions - Array de extensiones permitidas (ej. ['.fastq', '.fq.gz']).
+     * @param {number} options.maxSizeMB - Tamaño máximo del archivo en Megabytes.
      * @returns {Promise<{isValid: boolean, message: string}>} - Una promesa que resuelve a un objeto con el resultado.
      */
     async validate(file, options = {}) {
         const {
-            allowedExtensions = ['.fastq', '.fq', '.fastq.gz', '.fq.gz', '.fasta', '.fa', '.fna'],
-            maxSizeMB = 500
+            allowedExtensions = ['.fastq', '.fq', '.fastq.gz', '.fq.gz', '.fasta', '.fa', '.fna', '.txt'],
+            maxSizeMB = 50
         } = options;
 
         // 1. Validación de Extensión
@@ -59,7 +59,7 @@ const FileValidator = {
                         resolve({ isValid: false, message: 'Error: Not a valid FASTA file (must start with >).' });
                     }
                 } else {
-                    // Si es una extensión permitida pero no tenemos una regla de contenido, la damos por válida.
+                    // Si es una extensión permitida pero no tenemos una regla de contenido (como .txt), la damos por válida.
                     resolve({ isValid: true, message: fileName });
                 }
             };

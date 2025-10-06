@@ -14,37 +14,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const scStatusMessage = document.getElementById('sc-status-message');
     const scLoader = document.getElementById('sc-loader');
     const scResultsSection = document.getElementById('sc-results-section');
+    const fileInput = document.getElementById('sc-fastq-file');
+    const fileNameDisplay = document.querySelector('.file-name-display');
+    const cleanButton = document.getElementById('sc-clean-button');
     
     let cleanedFastqContent = "";
-    let pollingInterval = null;
 
-    // --- LÓGICA DE UI ---
-    function toggleSidebar() {
-        // legacy toggle
-        if (!appLayout) return;
-        appLayout.classList.toggle('sidebar-collapsed');
-        if (sidebarToggleBtn) sidebarToggleBtn.classList.toggle('is-active');
-    }
-
-    function applyTheme(theme) {
-        document.documentElement.setAttribute('data-theme', theme);
-        if (themeCheckbox) themeCheckbox.checked = theme === 'light';
-    }
-
-    function handleThemeChange() {
-        // If using a checkbox input
-        if (themeCheckbox) {
-            const newTheme = themeCheckbox.checked ? 'light' : 'dark';
-            localStorage.setItem('theme', newTheme);
-            applyTheme(newTheme);
-            return;
-        }
-        // Otherwise, toggle based on current attribute (for div/button toggles)
-        const current = document.documentElement.getAttribute('data-theme') || 'dark';
-        const newTheme = current === 'dark' ? 'light' : 'dark';
-        localStorage.setItem('theme', newTheme);
-        applyTheme(newTheme);
-    }
+ 
 
     // --- LÓGICA ASÍNCRONA DE LA HERRAMIENTA ---
 
@@ -53,6 +29,99 @@ document.addEventListener('DOMContentLoaded', () => {
     //  * @param {string} textContent - El contenido completo del archivo FASTQ.
     //  * @returns {Array<Object>} Un array de lecturas, donde cada una es {title, seq, qual}.
     //  */
+
+     // ==================================================================
+    // ===== SECCIÓN DE VALIDACIÓN DE ARCHIVOS ==========================
+    // ==================================================================
+    async function handleFileSelection() {
+        const file = fileInput.files[0];
+
+        if (file) {
+            fileNameDisplay.textContent = 'Validating...';
+            fileNameDisplay.style.color = 'var(--color-text-secondary)';
+            cleanButton.disabled = true; // Desactivar botón mientras se valida
+
+            // Llamamos a nuestro validador reutilizable con las opciones para FASTQ
+            const validationResult = await FileValidator.validate(file, {
+                allowedExtensions: ['.fastq', '.fq', '.fastq.gz', '.fq.gz'],
+                maxSizeMB: 500 // Límite de 500MB para el navegador
+            });
+
+            if (validationResult.isValid) {
+                fileNameDisplay.textContent = validationResult.message;
+                cleanButton.disabled = false; // ¡Archivo válido! Activamos el botón.
+            } else {
+                fileNameDisplay.textContent = validationResult.message;
+                fileNameDisplay.style.color = '#FF6B6B'; // Rojo para errores
+                fileInput.value = ''; // Limpiamos el input para forzar una nueva selección
+            }
+        } else {
+            fileNameDisplay.textContent = 'No file selected';
+            cleanButton.disabled = true;
+        }
+    }
+
+    // --- LÓGICA ASÍNCRONA DE LA HERRAMIENTA ---
+
+    async function handleFormSubmit(event) {
+        event.preventDefault();
+        resetUI();
+
+        const file = fileInput.files[0];
+        // Esta comprobación es una segunda capa de seguridad, ya que el botón debería estar desactivado.
+        if (!file) {
+            scStatusMessage.textContent = 'Error: Please select a valid FASTQ file.';
+            scStatusContainer.classList.remove('hidden');
+            return;
+        }
+
+        scStatusContainer.classList.remove('hidden');
+        scLoader.classList.remove('hidden');
+        scStatusMessage.textContent = 'Reading file into memory...';
+
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+            try {
+                scStatusMessage.textContent = 'File read. Starting cleaning process...';
+                const fileContent = e.target.result;
+
+                const formData = new FormData(scForm);
+                const params = {
+                    adapter: formData.get('adapter'),
+                    quality_threshold: parseInt(formData.get('quality_threshold'), 10),
+                    min_length: parseInt(formData.get('min_length'), 10),
+                    max_length: parseInt(formData.get('max_length'), 10),
+                    max_n_percent: parseInt(formData.get('max_n_percent'), 10),
+                    deduplicate: formData.has('deduplicate'),
+                    filter_complexity: formData.has('filter_complexity')
+                };
+
+                setTimeout(() => {
+                    const reads = parseFastq(fileContent);
+                    const { stats, cleanedReads } = cleanReads(reads, params);
+                    cleanedFastqContent = reconstructFastq(cleanedReads);
+                    scStatusMessage.textContent = 'Analysis complete!';
+                    scLoader.classList.add('hidden');
+                    scStatusContainer.classList.add('hidden');
+                    scResultsSection.classList.remove('hidden');
+                    renderResults({ summary: stats });
+                }, 50);
+
+            } catch (error) {
+                scStatusMessage.textContent = `An error occurred during processing: ${error.message}`;
+                scLoader.classList.add('hidden');
+            }
+        };
+
+        reader.onerror = function() {
+            scStatusMessage.textContent = 'Error reading the file.';
+            scLoader.classList.add('hidden');
+        };
+
+        reader.readAsText(file);
+    }
+
     function parseFastq(textContent) {
         const lines = textContent.split('\n');
         const reads = [];
@@ -203,77 +272,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    // --- LÓGICA ASÍNCRONA  ---
-
-    async function handleFormSubmit(event) {
-        event.preventDefault();
-        resetUI();
-
-        const fileInput = document.getElementById('sc-fastq-file');
-        const file = fileInput.files[0];
-        if (!file) {
-            scStatusMessage.textContent = 'Error: Please select a FASTQ file.';
-            scStatusContainer.classList.remove('hidden');
-            return;
-        }
-
-        scStatusContainer.classList.remove('hidden');
-        scLoader.classList.remove('hidden');
-        scStatusMessage.textContent = 'Reading file into memory...';
-
-        // Usamos FileReader para leer el archivo en el navegador
-        const reader = new FileReader();
-
-        reader.onload = function(e) {
-            try {
-                scStatusMessage.textContent = 'File read. Starting cleaning process...';
-                const fileContent = e.target.result;
-
-                // 1. Recoger parámetros del formulario
-                const formData = new FormData(scForm);
-                const params = {
-                    adapter: formData.get('adapter'),
-                    quality_threshold: parseInt(formData.get('quality_threshold'), 10),
-                    min_length: parseInt(formData.get('min_length'), 10),
-                    max_length: parseInt(formData.get('max_length'), 10),
-                    max_n_percent: parseInt(formData.get('max_n_percent'), 10),
-                    deduplicate: formData.has('deduplicate'),
-                    filter_complexity: formData.has('filter_complexity')
-                };
-
-                // Simular un pequeño retardo para que la UI se actualice
-                setTimeout(() => {
-                    // 2. Ejecutar el pipeline de limpieza
-                    const reads = parseFastq(fileContent);
-                    const { stats, cleanedReads } = cleanReads(reads, params);
-                    
-                    // 3. Guardar el contenido para la descarga
-                    cleanedFastqContent = reconstructFastq(cleanedReads);
-
-                    // 4. Mostrar los resultados
-                    scStatusMessage.textContent = 'Analysis complete!';
-                    scLoader.classList.add('hidden');
-                    scStatusContainer.classList.add('hidden');
-                    scResultsSection.classList.remove('hidden');
-                    renderResults({ summary: stats }); // La función de renderizado es compatible
-
-                }, 50); // 50ms de retardo
-
-            } catch (error) {
-                scStatusMessage.textContent = `An error occurred during processing: ${error.message}`;
-                scLoader.classList.add('hidden');
-            }
-        };
-
-        reader.onerror = function() {
-            scStatusMessage.textContent = 'Error reading the file.';
-            scLoader.classList.add('hidden');
-        };
-
-        // Iniciar la lectura del archivo
-        reader.readAsText(file);
-    }
-
     // --- FUNCIONES DE RESULTADOS  ---
     function renderResults(results) {
         if (!results || !results.summary) {
@@ -373,6 +371,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (scForm) scForm.addEventListener('submit', handleFormSubmit);
+
+        if (fileInput) {
+            fileInput.addEventListener('change', handleFileSelection);
+        }
+        if (cleanButton) {
+            cleanButton.disabled = true;
+        }
+
     }
 
     init();
